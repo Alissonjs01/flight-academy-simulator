@@ -14,6 +14,12 @@ export type AvionicMediaReference = {
   publicationState: PublicationState;
   createdAt: string;
   updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
+  publishedAt?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -54,6 +60,12 @@ export type AvionicSectionDocument = {
   internalLessonSlugs: string[];
   order: number;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 

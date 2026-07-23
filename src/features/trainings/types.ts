@@ -27,6 +27,14 @@ export type TrainingDocument = {
   relatedLessonId?: string;
   relatedLessonSlug?: string;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  publishedAt?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 

@@ -9,12 +9,16 @@ import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AuthProvider, useAuth } from "@/components/auth/AuthProvider";
+import { ConnectivityStatus } from "@/components/pwa/ConnectivityStatus";
+import { PwaProvider } from "@/components/pwa/PwaProvider";
 import { logout } from "@/services/authService";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <AuthProvider>
-      <AppFrame>{children}</AppFrame>
+      <PwaProvider>
+        <AppFrame>{children}</AppFrame>
+      </PwaProvider>
     </AuthProvider>
   );
 }
@@ -84,6 +88,7 @@ function AppFrame({ children }: Readonly<{ children: ReactNode }>) {
               <Search className="h-4 w-4 text-aviation-cyan" />
               <span>Buscar aulas, checklists ou módulos</span>
             </div>
+            <ConnectivityStatus compact />
             <UserMenu />
           </div>
         </header>

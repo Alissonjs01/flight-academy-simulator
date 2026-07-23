@@ -34,6 +34,14 @@ export type CourseDocument = {
   status: LearningStatus;
   prerequisites: string[];
   updatedAt: string;
+  createdAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  publishedAt?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
+  nextCourseId?: string;
   order: number;
   publicationState: PublicationState;
   technicalMetadata?: TechnicalMetadata;
@@ -51,6 +59,13 @@ export type ModuleDocument = {
   progressPercent: number;
   prerequisites: string[];
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -69,6 +84,9 @@ export type LessonDocument = {
   expectedAnswer: string;
   conclusion: string;
   nextLessonConnection: string;
+  previousLessonId?: string;
+  nextLessonId?: string;
+  markdownContent?: string;
   content: ContentBlock[];
   order: number;
   estimatedDuration: string;
@@ -83,6 +101,14 @@ export type LessonDocument = {
     canGoBack: boolean;
   };
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  publishedAt?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -143,6 +169,11 @@ export type ExerciseDifficulty = "facil" | "medio" | "dificil";
 
 export type OpenAnswerSelfAssessment = "entendi" | "preciso_revisar" | "nao_entendi";
 
+export type ExerciseAlternativeOption = {
+  id: string;
+  text: string;
+};
+
 export type ExerciseDocument = {
   id: string;
   lessonId: string;
@@ -151,6 +182,7 @@ export type ExerciseDocument = {
   type: ExerciseType;
   prompt: string;
   alternatives?: string[];
+  alternativeOptions?: ExerciseAlternativeOption[];
   correctAnswer?: string | boolean;
   expectedAnswer: string;
   explanation: string;
@@ -158,6 +190,13 @@ export type ExerciseDocument = {
   order: number;
   points: number;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 

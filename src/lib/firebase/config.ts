@@ -22,6 +22,8 @@ export function getFirebaseConfigStatus(): FirebaseConfigStatus {
     .filter(([, value]) => !value)
     .map(([key]) => `NEXT_PUBLIC_FIREBASE_${toEnvKey(key)}`);
 
+  const allowEmulators = process.env.NODE_ENV !== "production";
+
   return {
     isConfigured: missingKeys.length === 0,
     missingKeys,
@@ -32,7 +34,7 @@ export function getFirebaseConfigStatus(): FirebaseConfigStatus {
             measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
           }
         : undefined,
-    useEmulators: process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true",
+    useEmulators: allowEmulators && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true",
     useFirestoreContent: process.env.NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE === "firestore"
   };
 }

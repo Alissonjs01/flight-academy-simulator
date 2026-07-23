@@ -221,3 +221,201 @@ firebase deploy --only firestore:rules,firestore:indexes,storage
 - Se o login funcionar mas leituras falharem, confira Authentication, Rules e se o usuario tem UID correto.
 - Se o emulador nao responder, confirme `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` e portas 9099, 8080 e 9199 livres.
 - Se um admin nao conseguir acessar, faca logout/login depois de aplicar Custom Claims.
+
+## Painel administrativo
+
+O painel fica em `/admin` e exige usuario autenticado com papel `instructor` ou `admin`. A protecao visual da rota e apenas conveniencia; a autorizacao real tambem fica nas Firebase Security Rules.
+
+Papeis:
+
+- `student`: estuda conteudos publicados e grava apenas o proprio progresso.
+- `instructor`: cria e edita conteudos permitidos, rascunhos, publicacoes e uploads de midia, mas nao pode alterar papeis nem marcar conteudo tecnico como `verified`.
+- `admin`: gerencia conteudo, papeis, publicacoes criticas, verificacao tecnica e exclusoes quando nao houver dependencias.
+
+Para criar o primeiro administrador, crie o usuario por `/cadastro` e aplique Custom Claim em ambiente seguro:
+
+```bash
+npm run admin:set -- UID_DO_USUARIO
+```
+
+Depois faca logout/login para atualizar o token.
+
+### Como criar e publicar conteudo
+
+1. Acesse `/admin`.
+2. Escolha a aba de conteudo: Cursos, Modulos, Aulas, Exercicios, Aeronaves, Avionicos, Checklists ou Treinamentos.
+3. Use `Criar conteudo`.
+4. Preencha os campos obrigatorios e salve como `Rascunho`.
+5. Revise a pre-visualizacao e os metadados.
+6. Publique somente quando a classificacao e o status de verificacao estiverem coerentes.
+
+O editor de aulas usa campos estruturados e Markdown simples. HTML arbitrario nao deve ser armazenado sem sanitizacao.
+
+### Fontes, revisao e verificacao
+
+Conteudos tecnicos exibem campos de rastreabilidade para fonte, variante real, variante no simulador, versao do add-on, classificacao, status de verificacao, diferencas conhecidas e notas de revisao.
+
+- Conteudo sem fonte confirmada deve permanecer `provisional_unverified` e `pending_verification`.
+- Adaptacoes para Microsoft Flight Simulator devem explicar a adaptacao em `simulatorAdaptationNotes`.
+- Divergencias entre fontes devem ser registradas em `revisionNotes` e marcadas como `conflicting_sources` quando necessario.
+- Conteudo gerado por IA pode apoiar rascunhos didaticos, mas nao deve ser cadastrado como fonte.
+- Somente `admin` pode marcar `verificationStatus: verified`.
+- Depois de atualizacoes de aeronave, avionico ou add-on, revise `addonVersion`, `lastReviewedAt`, `knownSimulatorDifferences` e as notas de revisao.
+
+### Uploads
+
+Uploads administrativos estao preparados para:
+
+- `courseImages/{courseId}`;
+- `lessonImages/{lessonId}`;
+- `aircraftImages/{aircraftId}`;
+- `avionicsImages/{avionicId}`.
+
+Tipos aceitos: JPG, PNG e WebP. Limites atuais: 5 MB para cursos/aulas e 8 MB para aeronaves/avionicos. Alunos nao podem enviar imagens administrativas. Fotos de perfil continuam restritas ao proprio usuario.
+
+### Auditoria e historico
+
+Alteracoes relevantes geram documentos em:
+
+- `auditLogs`;
+- `contentRevisions`.
+
+Os registros guardam acao, entidade, usuario, papel, timestamp e campos alterados. Eles sao append-only pelas regras: editores podem criar e ler, mas nao alterar nem apagar logs existentes.
+
+### Testes do painel e regras
+
+```bash
+npm run test:firebase
+npm run test:rules
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Os testes cobrem bloqueio de alunos no conteudo administrativo, permissao de instrutor, poderes de admin, bloqueio de `verified` para instrutor, campos imutaveis, auditoria, dados privados e regras de Storage.
+
+### Limitacoes atuais
+
+- O painel oferece gerenciamento gradual e generico; editores especializados para sistemas, limitacoes, procedimentos e versoes comparadas de checklist ainda podem ser refinados.
+- Exclusoes com dependencias sao bloqueadas pelo servico do painel quando detectaveis; regras do Firestore nao conseguem consultar todos os relacionamentos possiveis em cascata.
+- Busca textual usa filtros client-side sobre lotes limitados. Para busca ampla, use um indice dedicado no futuro.
+- Upload de documentos tecnicos e PDFs ainda nao foi habilitado; somente imagens autorizadas.
+
+## Progressive Web App
+
+A plataforma possui manifest, icons, metadados de instalacao e service worker proprio. O nome atual permanece `Flight Academy Simulator`; para trocar depois, atualize `src/app/layout.tsx` e `public/manifest.webmanifest`.
+
+### Desenvolvimento
+
+```bash
+npm run dev
+npm run dev:real
+npm run dev:emulators
+npm run emulators
+npm run build
+npm run start
+```
+
+No ambiente de desenvolvimento, o service worker nao e registrado por padrao para nao atrapalhar HMR e testes. Para testar a PWA localmente, use build/start ou defina `NEXT_PUBLIC_ENABLE_PWA_IN_DEV=true` temporariamente. Em producao, a aplicacao ignora `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` para evitar conexao acidental aos emuladores.
+
+### Instalar no iPad
+
+1. Abra a plataforma no Safari.
+2. Toque em Compartilhar.
+3. Escolha Adicionar a Tela de Inicio.
+4. Confirme o nome.
+5. Abra pelo icone criado.
+
+No iPad/iPhone o Safari nao usa `beforeinstallprompt`; por isso a tela de Configuracoes mostra instrucoes manuais.
+
+### Instalar no Windows
+
+No Chrome ou Edge, abra a plataforma e use o botao Instalar quando aparecer em Configuracoes ou o icone de instalacao da barra do navegador.
+
+### Estrategia de cache
+
+- Arquivos estaticos, icons, manifest e chunks versionados usam cache publico.
+- Imagens e assets locais usam estrategia `stale while revalidate`.
+- Paginas publicas carregadas podem ser reutilizadas como fallback offline.
+- Dashboard, progresso, revisao, configuracoes e rotas privadas usam rede primeiro e nao sao persistidas como HTML privado.
+- `/admin` nao e armazenado em cache manualmente.
+- Requisicoes do Firebase Auth, Firestore e Storage nao sao interceptadas nem cacheadas manualmente.
+
+O service worker nunca salva senhas, tokens, Custom Claims, service accounts, respostas privadas do Firestore ou conteudos administrativos em cache manual.
+
+### O que funciona offline
+
+Com seguranca, a PWA pode:
+
+- abrir a estrutura visual ja carregada;
+- exibir a tela offline;
+- reutilizar assets publicos;
+- consultar paginas educacionais publicas ja carregadas;
+- manter dados locais reconhecidos ate migracao/sincronizacao quando o Firebase estiver configurado.
+
+Ainda exigem conexao:
+
+- cadastro;
+- primeiro login;
+- recuperacao de senha;
+- upload de imagens;
+- publicacao administrativa;
+- verificacao tecnica;
+- alteracao de papeis;
+- conteudos nunca carregados antes;
+- confirmacao real de sincronizacao com Firestore.
+
+### Sincronizacao e logout
+
+O progresso autenticado continua associado ao UID do Firebase quando a configuracao estiver ativa. O logout chama a limpeza de dados privados locais e avisa o service worker para remover caches privados manuais. Isso reduz o risco de um usuario ver dados do usuario anterior no mesmo dispositivo.
+
+O Firestore offline persistence nao foi ativado globalmente nesta etapa. A decisao e proposital: iPad/Safari, multiplas abas, troca de usuario e painel administrativo exigem uma politica mais especifica antes de usar IndexedDB como cache oficial do Firestore. A aplicacao preserva a arquitetura para ativar isso por fluxo no futuro.
+
+### Atualizacao da aplicacao
+
+Quando um novo service worker fica disponivel, a interface mostra:
+
+```text
+Uma nova versao da plataforma esta disponivel.
+```
+
+O usuario pode atualizar agora ou depois. A aplicacao nao força recarregamento automatico durante exercicios, checklists, uploads ou edicao administrativa.
+
+### Limpar cache
+
+A pagina `/configuracoes` mostra status de instalacao, conexao, versao, armazenamento e botoes para:
+
+- limpar cache publico;
+- limpar dados locais privados;
+- limpar todos os caches da PWA.
+
+Cada acao pede confirmacao antes de remover dados.
+
+### Testes da PWA
+
+```bash
+npm run test:pwa
+npm run test:firebase
+npm run test:rules
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Foram testados manifest, politica de cache, service worker, comandos de limpeza, fallback offline, testes Firebase com emuladores, lint, typecheck e build.
+
+### Testes pendentes em dispositivos reais
+
+Ainda devem ser conferidos manualmente quando voce estiver com os dispositivos:
+
+- Safari no iPad em orientacao vertical e horizontal;
+- instalacao via Adicionar a Tela de Inicio;
+- abertura pela tela inicial;
+- retorno apos suspensao do iPad;
+- teclado virtual em formularios;
+- uploads pelo Safari;
+- painel administrativo em tela dividida;
+- perda e retorno de conexao real;
+- Chrome e Edge instalados no Windows.
+
+Nao houve deploy nem validacao em Firebase real nesta etapa.

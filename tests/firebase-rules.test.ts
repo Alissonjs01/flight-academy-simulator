@@ -70,7 +70,7 @@ describe("Firestore Security Rules", () => {
 
   it("bloqueia aluno editando curso", async () => {
     const db = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
-    await assertFails(setDoc(doc(db, "courses", "course-new"), publishedCourse("course-new")));
+    await assertFails(setDoc(doc(db, "courses", "course-new"), publishedCourse("course-new", "student-a")));
   });
 
   it("bloqueia aluno alterando o próprio papel", async () => {
@@ -83,22 +83,89 @@ describe("Firestore Security Rules", () => {
 
   it("bloqueia aluno marcando conteúdo como verified", async () => {
     const db = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
-    await assertFails(setDoc(doc(db, "courses", "course-verified"), verifiedCourse("course-verified")));
+    await assertFails(setDoc(doc(db, "courses", "course-verified"), verifiedCourse("course-verified", "student-a")));
   });
 
-  it("permite instrutor editar conteúdo permitido sem marcar verified", async () => {
+  it("permite instrutor criar rascunho e editar conteúdo permitido sem marcar verified", async () => {
     const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
-    await assertSucceeds(setDoc(doc(db, "courses", "course-instructor"), publishedCourse("course-instructor")));
+    await assertSucceeds(setDoc(doc(db, "courses", "course-instructor"), draftCourse("course-instructor", "instructor-a")));
+    await assertSucceeds(updateDoc(doc(db, "courses", "course-instructor"), { title: "Curso atualizado", updatedAt: "2026-07-23T00:01:00.000Z", updatedBy: "instructor-a" }));
   });
 
   it("bloqueia instrutor marcando conteúdo como verified", async () => {
     const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
-    await assertFails(setDoc(doc(db, "courses", "course-instructor-verified"), verifiedCourse("course-instructor-verified")));
+    await assertFails(setDoc(doc(db, "courses", "course-instructor-verified"), verifiedCourse("course-instructor-verified", "instructor-a")));
   });
 
-  it("permite administrador gerenciar conteúdo verificado", async () => {
+  it("permite administrador publicar conteúdo e marcar verified", async () => {
     const db = testEnv.authenticatedContext("admin-a", { role: "admin" }).firestore();
-    await assertSucceeds(setDoc(doc(db, "courses", "course-admin-verified"), verifiedCourse("course-admin-verified")));
+    await assertSucceeds(setDoc(doc(db, "courses", "course-admin-verified"), verifiedCourse("course-admin-verified", "admin-a")));
+  });
+
+  it("permite administrador gerenciar papéis sem permitir aluno fazer o mesmo", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "users", "student-a"), userProfile("student-a", "student"));
+    });
+    const adminDb = testEnv.authenticatedContext("admin-a", { role: "admin" }).firestore();
+    const studentDb = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
+    await assertSucceeds(updateDoc(doc(adminDb, "users", "student-a"), { role: "instructor", updatedAt: "2026-07-23T00:02:00.000Z" }));
+    await assertFails(updateDoc(doc(studentDb, "users", "student-a"), { role: "admin" }));
+  });
+
+  it("bloqueia alteração de createdBy e createdAt em conteúdo existente", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "courses", "course-created"), draftCourse("course-created", "instructor-a"));
+    });
+    const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
+    await assertFails(updateDoc(doc(db, "courses", "course-created"), { createdBy: "other", updatedAt: "2026-07-23T00:03:00.000Z", updatedBy: "instructor-a" }));
+    await assertFails(updateDoc(doc(db, "courses", "course-created"), { createdAt: "2026-07-24T00:00:00.000Z", updatedAt: "2026-07-23T00:03:00.000Z", updatedBy: "instructor-a" }));
+  });
+
+  it("bloqueia publicação técnica sem classificação", async () => {
+    const db = testEnv.authenticatedContext("admin-a", { role: "admin" }).firestore();
+    await assertFails(setDoc(doc(db, "lessons", "lesson-no-classification"), {
+      id: "lesson-no-classification",
+      title: "Aula sem metadados",
+      publicationState: "published",
+      createdAt: "2026-07-23T00:00:00.000Z",
+      updatedAt: "2026-07-23T00:00:00.000Z",
+      createdBy: "admin-a",
+      updatedBy: "admin-a"
+    }));
+  });
+
+  it("permite conteúdo técnico provisório corretamente classificado", async () => {
+    const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
+    await assertSucceeds(setDoc(doc(db, "lessons", "lesson-provisional"), {
+      id: "lesson-provisional",
+      title: "Aula provisória",
+      publicationState: "published",
+      createdAt: "2026-07-23T00:00:00.000Z",
+      updatedAt: "2026-07-23T00:00:00.000Z",
+      createdBy: "instructor-a",
+      updatedBy: "instructor-a",
+      technicalMetadata: {
+        contentClassification: "provisional_unverified",
+        verificationStatus: "pending_verification"
+      }
+    }));
+  });
+
+  it("permite auditoria append-only para editor autorizado", async () => {
+    const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
+    const auditRef = doc(db, "auditLogs", "audit-a");
+    await assertSucceeds(setDoc(auditRef, {
+      id: "audit-a",
+      action: "create",
+      entityType: "course",
+      entityId: "course-a",
+      entityTitle: "Curso",
+      userId: "instructor-a",
+      userRole: "instructor",
+      timestamp: "2026-07-23T00:00:00.000Z",
+      changedFields: ["title"]
+    }));
+    await assertFails(updateDoc(auditRef, { entityTitle: "Alterado" }));
   });
 
   it("bloqueia gravação privada com campos inválidos", async () => {
@@ -176,6 +243,11 @@ describe("Storage Security Rules", () => {
     await assertSucceeds(uploadBytes(ref(storage, "courseImages/course-a/main.png"), imageBlob("image/png")));
   });
 
+  it("permite instrutor enviar imagem de aula válida", async () => {
+    const storage = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).storage();
+    await assertSucceeds(uploadBytes(ref(storage, "lessonImages/lesson-a/main.webp"), imageBlob("image/webp")));
+  });
+
   it("bloqueia upload com tipo inválido", async () => {
     const storage = testEnv.authenticatedContext("admin-a", { role: "admin" }).storage();
     await assertFails(uploadBytes(ref(storage, "courseImages/course-a/main.txt"), imageBlob("text/plain")));
@@ -208,13 +280,17 @@ async function seedPrivateProgress(userId: string) {
   });
 }
 
-function publishedCourse(id: string) {
+function publishedCourse(id: string, owner = "admin-a") {
   return {
     id,
     slug: id,
     title: "Curso publicado",
     publicationState: "published",
     order: 1,
+    createdAt: "2026-07-23T00:00:00.000Z",
+    updatedAt: "2026-07-23T00:00:00.000Z",
+    createdBy: owner,
+    updatedBy: owner,
     technicalMetadata: {
       contentClassification: "provisional_unverified",
       verificationStatus: "pending_verification"
@@ -222,9 +298,16 @@ function publishedCourse(id: string) {
   };
 }
 
-function verifiedCourse(id: string) {
+function draftCourse(id: string, owner = "instructor-a") {
   return {
-    ...publishedCourse(id),
+    ...publishedCourse(id, owner),
+    publicationState: "draft"
+  };
+}
+
+function verifiedCourse(id: string, owner = "admin-a") {
+  return {
+    ...publishedCourse(id, owner),
     technicalMetadata: {
       contentClassification: "official_real_world",
       verificationStatus: "verified"

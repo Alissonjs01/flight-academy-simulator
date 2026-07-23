@@ -32,6 +32,12 @@ service firebase.storage {
       allow delete: if canManageContentMedia();
     }
 
+    match /lessonImages/{lessonId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if canManageContentMedia() && validImage(5 * 1024 * 1024);
+      allow delete: if canManageContentMedia();
+    }
+
     match /aircraftImages/{aircraftId}/{fileName} {
       allow read: if signedIn();
       allow write: if canManageContentMedia() && validImage(8 * 1024 * 1024);

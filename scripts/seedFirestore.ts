@@ -31,6 +31,13 @@ import { localTrainingDocuments } from "../src/features/trainings/data/localTrai
 
 const projectId = process.env.FIREBASE_PROJECT_ID ?? process.env.GCLOUD_PROJECT ?? process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "demo-flight-academy-simulator";
 const isEmulator = Boolean(process.env.FIRESTORE_EMULATOR_HOST);
+const realSeedConfirmation = process.env.CONFIRM_REAL_FIREBASE_SEED;
+
+if (!isEmulator && realSeedConfirmation !== projectId) {
+  console.error(`Seed real bloqueado. Para carregar dados em ${projectId}, defina CONFIRM_REAL_FIREBASE_SEED=${projectId}.`);
+  console.error("Confirme o projeto de destino antes de executar. O seed é idempotente e não apaga dados existentes.");
+  process.exit(1);
+}
 
 if (!getApps().length) {
   initializeApp(isEmulator ? { projectId } : { projectId, credential: applicationDefault() });

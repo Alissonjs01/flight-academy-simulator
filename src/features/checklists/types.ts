@@ -54,6 +54,13 @@ export type ChecklistDocument = {
   version: string;
   publicationState: PublicationState;
   updatedAt: string;
+  createdAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  publishedAt?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  versionNumber?: number;
   studyMode: ChecklistModeSettings;
   operationalMode: ChecklistModeSettings;
   technicalMetadata?: TechnicalMetadata;

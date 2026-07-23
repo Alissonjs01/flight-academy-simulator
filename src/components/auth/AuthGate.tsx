@@ -7,7 +7,8 @@ import { getFirebaseConfigStatus } from "@/lib/firebase/config";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Panel } from "@/components/ui/Panel";
 
-const publicPaths = new Set(["/login", "/cadastro", "/recuperar-senha"]);
+const publicPaths = new Set(["/login", "/cadastro", "/recuperar-senha", "/offline"]);
+const authPaths = new Set(["/login", "/cadastro", "/recuperar-senha"]);
 
 export function AuthGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const { user, role, isLoading, isConfigured, error } = useAuth();
   const isPublicPath = publicPaths.has(pathname);
+  const isAuthPath = authPaths.has(pathname);
   const next = searchParams.get("next") ?? "/dashboard";
 
   useEffect(() => {
@@ -26,10 +28,10 @@ export function AuthGate({ children }: { children: ReactNode }) {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
     }
 
-    if (user && isPublicPath) {
+    if (user && isAuthPath) {
       router.replace(next);
     }
-  }, [isConfigured, isLoading, isPublicPath, next, pathname, router, user]);
+  }, [isAuthPath, isConfigured, isLoading, isPublicPath, next, pathname, router, user]);
 
   if (!isConfigured && !isPublicPath) {
     return <FirebaseConfigurationMessage />;

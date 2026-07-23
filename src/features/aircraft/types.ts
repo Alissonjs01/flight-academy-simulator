@@ -14,6 +14,12 @@ export type AircraftMediaReference = {
   publicationState: PublicationState;
   createdAt: string;
   updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
+  publishedAt?: string;
+  archivedAt?: string | null;
+  archivedBy?: string;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -57,6 +63,12 @@ export type AircraftSystemDocument = {
   details: string;
   order: number;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -68,6 +80,12 @@ export type AircraftLimitationDocument = {
   note: string;
   order: number;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -81,6 +99,12 @@ export type AircraftPerformanceDocument = {
   note: string;
   order: number;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 
@@ -93,6 +117,12 @@ export type AircraftProcedureDocument = {
   safetyNote: string;
   order: number;
   publicationState: PublicationState;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  archivedAt?: string | null;
+  version?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 

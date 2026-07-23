@@ -40,6 +40,17 @@ service cloud.firestore {
       return request.resource.data.publicationState in ["published", "draft"];
     }
 
+    function validTimestampString(fieldName) {
+      return !request.resource.data.keys().hasAny([fieldName]) ||
+        (request.resource.data[fieldName] is string && request.resource.data[fieldName].size() <= 40);
+    }
+
+    function hasNoSensitiveAdminFields() {
+      return !request.resource.data.keys().hasAny([
+        "role", "uid", "privateKey", "secret", "serviceAccount", "adminCredential"
+      ]);
+    }
+
     function writesVerifiedTechnicalStatus() {
       return request.resource.data.keys().hasAny(["technicalMetadata"]) &&
         request.resource.data.technicalMetadata is map &&
@@ -53,7 +64,60 @@ service cloud.firestore {
       return request.resource.data.keys().hasAll(["id", "publicationState"]) &&
         validPublicationState() &&
         request.resource.data.id is string &&
-        request.resource.data.id.size() <= 140;
+        request.resource.data.id.size() <= 140 &&
+        hasNoSensitiveAdminFields();
+    }
+
+    function validContentCreate(collectionName) {
+      return validContentWrite() &&
+        request.resource.data.keys().hasAll(["createdAt", "updatedAt", "createdBy", "updatedBy"]) &&
+        request.resource.data.createdBy == uid() &&
+        request.resource.data.updatedBy == uid() &&
+        validTimestampString("createdAt") &&
+        validTimestampString("updatedAt") &&
+        validTechnicalPublish(collectionName);
+    }
+
+    function validContentUpdate(collectionName) {
+      return validContentWrite() &&
+        validTimestampString("updatedAt") &&
+        (!request.resource.data.keys().hasAny(["updatedBy"]) || request.resource.data.updatedBy == uid()) &&
+        (!resource.data.keys().hasAny(["createdAt"]) || request.resource.data.createdAt == resource.data.createdAt) &&
+        (!resource.data.keys().hasAny(["createdBy"]) || request.resource.data.createdBy == resource.data.createdBy) &&
+        validTechnicalPublish(collectionName);
+    }
+
+    function isTechnicalCollection(collectionName) {
+      return collectionName in [
+        "lessons",
+        "aircraft", "aircraftSystems", "aircraftLimitations", "aircraftPerformance", "aircraftProcedures",
+        "avionics", "avionicsSections", "avionicsComponents", "avionicsProcedures",
+        "checklists", "checklistItems", "trainings"
+      ];
+    }
+
+    function validTechnicalPublish(collectionName) {
+      return request.resource.data.publicationState != "published" ||
+        (!isTechnicalCollection(collectionName) && !request.resource.data.keys().hasAny(["technicalMetadata"])) ||
+        (
+          request.resource.data.technicalMetadata is map &&
+          request.resource.data.technicalMetadata.keys().hasAll(["contentClassification", "verificationStatus"]) &&
+          request.resource.data.technicalMetadata.contentClassification in [
+            "official_real_world",
+            "official_simulator_documentation",
+            "simulator_adaptation",
+            "training_exercise",
+            "educational_explanation",
+            "provisional_unverified"
+          ] &&
+          request.resource.data.technicalMetadata.verificationStatus in [
+            "verified",
+            "partially_verified",
+            "pending_verification",
+            "conflicting_sources",
+            "obsolete"
+          ]
+        );
     }
 
     function canWriteContent() {
@@ -105,12 +169,52 @@ service cloud.firestore {
         ]);
     }
 
+    function validAdminUserUpdate(userId) {
+      return isAdmin() &&
+        resource.data.uid == userId &&
+        request.resource.data.uid == userId &&
+        request.resource.data.role in ["student", "instructor", "admin"] &&
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "displayName", "email", "photoURL", "role", "updatedAt", "lastLoginAt", "migrationCompleted",
+          "onboardingCompleted", "updatedAtServer", "lastLoginAtServer"
+        ]);
+    }
+
     match /users/{userId} {
       allow get: if signedIn() && (uid() == userId || isAdmin());
       allow list: if isAdmin();
       allow create: if validUserCreate(userId);
-      allow update: if validUserUpdate(userId) || isAdmin();
+      allow update: if validUserUpdate(userId) || validAdminUserUpdate(userId);
       allow delete: if isAdmin();
+    }
+
+    match /auditLogs/{auditId} {
+      allow read: if isContentEditor();
+      allow create: if isContentEditor() &&
+        request.resource.data.keys().hasAll(["id", "action", "entityType", "entityId", "entityTitle", "userId", "userRole", "timestamp", "changedFields"]) &&
+        request.resource.data.id == auditId &&
+        request.resource.data.userId == uid() &&
+        request.resource.data.userRole in ["instructor", "admin"] &&
+        request.resource.data.changedFields is list &&
+        request.resource.data.changedFields.size() <= 80 &&
+        request.resource.data.timestamp is string &&
+        request.resource.data.timestamp.size() <= 40;
+      allow update, delete: if false;
+    }
+
+    match /contentRevisions/{revisionId} {
+      allow read: if isContentEditor();
+      allow create: if isContentEditor() &&
+        request.resource.data.keys().hasAll(["id", "action", "entityType", "entityId", "entityTitle", "userId", "userRole", "timestamp", "changedFields"]) &&
+        request.resource.data.id == revisionId &&
+        request.resource.data.userId == uid() &&
+        request.resource.data.userRole in ["instructor", "admin"] &&
+        request.resource.data.changedFields is list &&
+        request.resource.data.changedFields.size() <= 80 &&
+        request.resource.data.timestamp is string &&
+        request.resource.data.timestamp.size() <= 40;
+      allow update, delete: if false;
     }
 
     match /{collectionName}/{documentId} {
@@ -122,13 +226,21 @@ service cloud.firestore {
         "checklists", "checklistItems", "trainings"
       ] && signedIn() && (isPublished() || isContentEditor());
 
-      allow create, update: if collectionName in [
+      allow create: if collectionName in [
         "courses", "modules", "lessons", "exercises", "assessments",
         "aircraft", "aircraftSystems", "aircraftLimitations", "aircraftPerformance", "aircraftProcedures",
         "aircraftChecklists", "aircraftTrainings", "aircraftCourseRelations", "aircraftAvionics",
         "avionics", "avionicsSections", "avionicsComponents", "avionicsProcedures", "avionicsTrainings", "avionicsCourses",
         "checklists", "checklistItems", "trainings"
-      ] && canWriteContent() && validContentWrite();
+      ] && canWriteContent() && validContentCreate(collectionName);
+
+      allow update: if collectionName in [
+        "courses", "modules", "lessons", "exercises", "assessments",
+        "aircraft", "aircraftSystems", "aircraftLimitations", "aircraftPerformance", "aircraftProcedures",
+        "aircraftChecklists", "aircraftTrainings", "aircraftCourseRelations", "aircraftAvionics",
+        "avionics", "avionicsSections", "avionicsComponents", "avionicsProcedures", "avionicsTrainings", "avionicsCourses",
+        "checklists", "checklistItems", "trainings"
+      ] && canWriteContent() && validContentUpdate(collectionName);
 
       allow delete: if collectionName in [
         "courses", "modules", "lessons", "exercises", "assessments",

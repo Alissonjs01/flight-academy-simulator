@@ -12,6 +12,7 @@ import {
 import { getFirebaseAuth } from "@/lib/firebase/client";
 import { ensureStudentProfile } from "@/services/userProfileService";
 import { clearPrivateLocalData } from "@/services/localStorageMigrationService";
+import { clearPwaPrivateCaches } from "@/services/pwaService";
 
 export function observeAuthState(callback: (user: User | null) => void) {
   return onAuthStateChanged(getFirebaseAuth(), callback);
@@ -37,6 +38,7 @@ export async function loginWithEmail(email: string, password: string) {
 export async function logout() {
   await signOut(getFirebaseAuth());
   clearPrivateLocalData();
+  await clearPwaPrivateCaches();
 }
 
 export async function requestPasswordReset(email: string) {
