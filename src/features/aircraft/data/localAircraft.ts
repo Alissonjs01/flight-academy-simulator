@@ -5,16 +5,40 @@ import type {
   AircraftDocument,
   AircraftLimitationDocument,
   AircraftMediaReference,
+  AircraftPerformanceDocument,
   AircraftProcedureDocument,
   AircraftSystemDocument,
   AircraftTrainingDocument
 } from "@/features/aircraft/types";
+import { provisionalTechnicalMetadata, simulatorAdaptationMetadata, trainingExerciseMetadata } from "@/features/technical/defaults";
 
 const createdAt = "2026-07-23T00:00:00.000Z";
 const updatedAt = "2026-07-23T00:00:00.000Z";
 const provisional = "Dados provisórios. Verificar manuais, documentação do fabricante e configuração exata do simulador antes de usar como referência.";
 const safetyNote =
   "Procedimentos reais devem ser sempre verificados nos manuais adequados, documentos oficiais, checklists da aeronave e orientação de instrutores certificados. Esta plataforma é apenas para estudo em simulador.";
+const c408TechnicalMetadata = provisionalTechnicalMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAdaptationNotes: "Conteúdo local preparado para estudo no simulador, pendente de comparação com fonte aplicável à variante exata.",
+  knownSimulatorDifferences: "Diferenças entre aeronave real e implementação do simulador ainda não foram catalogadas."
+});
+const c408SimulatorAdaptationMetadata = simulatorAdaptationMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  knownSimulatorDifferences: "Diferenças entre aeronave real e implementação do simulador ainda não foram catalogadas."
+});
+const c408TrainingMetadata = trainingExerciseMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAdaptationNotes: "Treinamento didático para simulador; não representa procedimento aeronáutico oficial."
+});
 
 function mainImage(aircraftId: string, slug: string, alt: string): AircraftMediaReference {
   return {
@@ -53,13 +77,15 @@ export const localAircraftDocuments: AircraftDocument[] = [
     systemIds: ["system-c408-flight-controls", "system-c408-powerplant", "system-c408-avionics"],
     limitationIds: ["limitation-c408-speeds", "limitation-c408-weight", "limitation-c408-weather"],
     procedureIds: ["procedure-c408-preflight", "procedure-c408-takeoff", "procedure-c408-approach"],
+    performanceIds: [],
     checklistIds: ["checklist-c408-preflight", "checklist-c408-approach"],
     trainingIds: ["training-c408-traffic-pattern", "training-c408-energy-management"],
     relatedCourseIds: ["course-fundamentos-pilotagem", "course-garmin-g1000-nxi"],
     installedAvionicIds: ["avionic-garmin-g1000-nxi"],
     publicationState: "published",
     createdAt,
-    updatedAt
+    updatedAt,
+    technicalMetadata: c408TechnicalMetadata
   },
   futureAircraft("aircraft-cessna-172", "cessna-172", "Cessna", "172", "Cessna 172", "Monomotor de treinamento"),
   futureAircraft("aircraft-tbm-930", "tbm-930", "Daher", "TBM 930", "TBM 930", "Monomotor turboélice executivo"),
@@ -77,7 +103,8 @@ export const localAircraftSystemDocuments: AircraftSystemDocument[] = [
     summary: "Área de estudo para manche, pedais, compensação e resposta da aeronave.",
     details: provisional,
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   },
   {
     id: "system-c408-powerplant",
@@ -86,7 +113,8 @@ export const localAircraftSystemDocuments: AircraftSystemDocument[] = [
     summary: "Estudo de potência, torque, hélice, tendência de energia e operação em simulador.",
     details: provisional,
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   },
   {
     id: "system-c408-avionics",
@@ -95,7 +123,8 @@ export const localAircraftSystemDocuments: AircraftSystemDocument[] = [
     summary: "Integração com Garmin G1000 NXi, instrumentos primários e consciência situacional.",
     details: "Conteúdo inicial preparado para a trilha Garmin G1000 NXi. Dados específicos do painel devem ser refinados conforme a versão do simulador.",
     order: 3,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   }
 ];
 
@@ -107,7 +136,8 @@ export const localAircraftLimitationDocuments: AircraftLimitationDocument[] = [
     value: provisional,
     note: "Não usar como referência oficial. Preencher somente após validação em manual adequado.",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   },
   {
     id: "limitation-c408-weight",
@@ -116,7 +146,8 @@ export const localAircraftLimitationDocuments: AircraftLimitationDocument[] = [
     value: provisional,
     note: "Área reservada para limites, carga, centro de gravidade e impacto no desempenho.",
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   },
   {
     id: "limitation-c408-weather",
@@ -125,9 +156,12 @@ export const localAircraftLimitationDocuments: AircraftLimitationDocument[] = [
     value: provisional,
     note: "A plataforma deve separar prática em simulador de operação real.",
     order: 3,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   }
 ];
+
+export const localAircraftPerformanceDocuments: AircraftPerformanceDocument[] = [];
 
 export const localAircraftProcedureDocuments: AircraftProcedureDocument[] = [
   {
@@ -138,7 +172,8 @@ export const localAircraftProcedureDocuments: AircraftProcedureDocument[] = [
     steps: ["Confirmar cenário e meteorologia do simulador", "Revisar objetivo da missão", "Verificar configuração dos controles", "Abrir checklist aplicável"],
     safetyNote,
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408SimulatorAdaptationMetadata
   },
   {
     id: "procedure-c408-takeoff",
@@ -148,7 +183,8 @@ export const localAircraftProcedureDocuments: AircraftProcedureDocument[] = [
     steps: ["Planejar pista e vento", "Aplicar potência de forma progressiva no simulador", "Manter eixo com correções pequenas", "Monitorar tendência de velocidade e atitude"],
     safetyNote,
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408SimulatorAdaptationMetadata
   },
   {
     id: "procedure-c408-approach",
@@ -158,7 +194,8 @@ export const localAircraftProcedureDocuments: AircraftProcedureDocument[] = [
     steps: ["Definir critérios de estabilidade", "Monitorar velocidade, razão de descida e alinhamento", "Corrigir causas antes de efeitos", "Arremeter se o perfil ficar instável"],
     safetyNote,
     order: 3,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408SimulatorAdaptationMetadata
   }
 ];
 
@@ -170,7 +207,8 @@ export const localAircraftChecklistDocuments: AircraftChecklistDocument[] = [
     phase: "Solo",
     items: ["Checklist provisório para simulador", "Configuração de controles revisada", "Objetivo da sessão definido", "Manual/checklist adequado deve ser consultado"],
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408SimulatorAdaptationMetadata
   },
   {
     id: "checklist-c408-approach",
@@ -179,7 +217,8 @@ export const localAircraftChecklistDocuments: AircraftChecklistDocument[] = [
     phase: "Aproximação",
     items: ["Velocidade alvo definida", "Trajetória monitorada", "Configuração estabilizada", "Critério de arremetida revisado"],
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408SimulatorAdaptationMetadata
   }
 ];
 
@@ -192,7 +231,8 @@ export const localAircraftTrainingDocuments: AircraftTrainingDocument[] = [
     duration: "35 min",
     status: "available",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TrainingMetadata
   },
   {
     id: "training-c408-energy-management",
@@ -202,7 +242,8 @@ export const localAircraftTrainingDocuments: AircraftTrainingDocument[] = [
     duration: "40 min",
     status: "planned",
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TrainingMetadata
   }
 ];
 
@@ -215,7 +256,8 @@ export const localAircraftCourseRelations: AircraftCourseRelationDocument[] = [
     slug: "fundamentos-da-pilotagem",
     relation: "Aeronave base para exercícios práticos do curso.",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TrainingMetadata
   },
   {
     id: "aircraft-course-c408-g1000",
@@ -225,7 +267,8 @@ export const localAircraftCourseRelations: AircraftCourseRelationDocument[] = [
     slug: "garmin-g1000-nxi",
     relation: "Aeronave de referência para estudo do painel e aviônicos.",
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TrainingMetadata
   }
 ];
 
@@ -237,7 +280,8 @@ export const localAircraftAvionicDocuments: AircraftAvionicDocument[] = [
     name: "Garmin G1000 NXi",
     summary: "Aviônico inicial de estudo. A configuração exata deve ser validada conforme a aeronave disponível no simulador.",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TechnicalMetadata
   }
 ];
 
@@ -263,12 +307,19 @@ function futureAircraft(id: string, slug: string, manufacturer: string, model: s
     systemIds: [],
     limitationIds: [],
     procedureIds: [],
+    performanceIds: [],
     checklistIds: [],
     trainingIds: [],
     relatedCourseIds: [],
     installedAvionicIds: [],
     publicationState: "draft",
     createdAt,
-    updatedAt
+    updatedAt,
+    technicalMetadata: provisionalTechnicalMetadata({
+      aircraftManufacturer: manufacturer,
+      aircraftModel: model,
+      simulatorPlatform: "Microsoft Flight Simulator",
+      revisionNotes: "Cadastro reservado para futura pesquisa e validação técnica."
+    })
   };
 }

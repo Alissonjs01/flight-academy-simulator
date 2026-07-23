@@ -1,4 +1,5 @@
 import type { PublicationState } from "@/features/content/types";
+import type { TechnicalMetadata } from "@/features/technical/types";
 
 export type AircraftStudyStatus = "current" | "available" | "planned" | "paused";
 
@@ -13,6 +14,7 @@ export type AircraftMediaReference = {
   publicationState: PublicationState;
   createdAt: string;
   updatedAt: string;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftDocument = {
@@ -36,6 +38,7 @@ export type AircraftDocument = {
   systemIds: string[];
   limitationIds: string[];
   procedureIds: string[];
+  performanceIds: string[];
   checklistIds: string[];
   trainingIds: string[];
   relatedCourseIds: string[];
@@ -43,6 +46,7 @@ export type AircraftDocument = {
   publicationState: PublicationState;
   createdAt: string;
   updatedAt: string;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftSystemDocument = {
@@ -53,6 +57,7 @@ export type AircraftSystemDocument = {
   details: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftLimitationDocument = {
@@ -63,6 +68,20 @@ export type AircraftLimitationDocument = {
   note: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
+};
+
+export type AircraftPerformanceDocument = {
+  id: string;
+  aircraftId: string;
+  title: string;
+  value: string;
+  unit?: string;
+  conditions?: string;
+  note: string;
+  order: number;
+  publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftProcedureDocument = {
@@ -74,6 +93,7 @@ export type AircraftProcedureDocument = {
   safetyNote: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftChecklistDocument = {
@@ -84,6 +104,7 @@ export type AircraftChecklistDocument = {
   items: string[];
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftTrainingDocument = {
@@ -95,6 +116,7 @@ export type AircraftTrainingDocument = {
   status: "available" | "planned";
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftCourseRelationDocument = {
@@ -106,6 +128,7 @@ export type AircraftCourseRelationDocument = {
   relation: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftAvionicDocument = {
@@ -116,12 +139,14 @@ export type AircraftAvionicDocument = {
   summary: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AircraftProfile = {
   aircraft: AircraftDocument;
   systems: AircraftSystemDocument[];
   limitations: AircraftLimitationDocument[];
+  performances: AircraftPerformanceDocument[];
   procedures: AircraftProcedureDocument[];
   checklists: AircraftChecklistDocument[];
   trainings: AircraftTrainingDocument[];

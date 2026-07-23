@@ -9,6 +9,7 @@ import { trainingStatusLabels } from "@/features/trainings/statusLabels";
 import { readTrainingRecord, saveTrainingRecord, setTrainingStatus } from "@/services/trainingRecordService";
 import { EmptyState } from "@/components/ui/StateMessage";
 import { Panel } from "@/components/ui/Panel";
+import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 const allOption = "Todos";
 
@@ -125,6 +126,7 @@ function TrainingCard({ training, onRecordSaved }: { training: TrainingDocument;
       <div className="mt-3 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-slate-300">
         {training.conditions}
       </div>
+      <TechnicalMetadataSummary metadata={training.technicalMetadata} compact />
 
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <ListBlock title="Instruções" items={training.instructions} />

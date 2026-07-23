@@ -1,0 +1,157 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function claimRole() {
+      return request.auth.token.role;
+    }
+
+    function userRole() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(uid()))
+        ? get(/databases/$(database)/documents/users/$(uid())).data.role
+        : null;
+    }
+
+    function isAdmin() {
+      return signedIn() && (claimRole() == "admin" || userRole() == "admin");
+    }
+
+    function isInstructor() {
+      return signedIn() && (claimRole() == "instructor" || userRole() == "instructor");
+    }
+
+    function isContentEditor() {
+      return isAdmin() || isInstructor();
+    }
+
+    function isPublished() {
+      return resource.data.publicationState == "published";
+    }
+
+    function validPublicationState() {
+      return request.resource.data.publicationState in ["published", "draft"];
+    }
+
+    function writesVerifiedTechnicalStatus() {
+      return request.resource.data.keys().hasAny(["technicalMetadata"]) &&
+        request.resource.data.technicalMetadata is map &&
+        (
+          request.resource.data.technicalMetadata.verificationStatus == "verified" ||
+          request.resource.data.technicalMetadata.contentClassification == "official_real_world"
+        );
+    }
+
+    function validContentWrite() {
+      return request.resource.data.keys().hasAll(["id", "publicationState"]) &&
+        validPublicationState() &&
+        request.resource.data.id is string &&
+        request.resource.data.id.size() <= 140;
+    }
+
+    function canWriteContent() {
+      return isAdmin() || (isInstructor() && !writesVerifiedTechnicalStatus());
+    }
+
+    function isOwnerField() {
+      return signedIn() && request.resource.data.userId == uid();
+    }
+
+    function validPrivateWrite() {
+      return isOwnerField() &&
+        request.resource.data.keys().hasAll(["id", "userId"]) &&
+        request.resource.data.id is string &&
+        request.resource.data.id.size() <= 180 &&
+        request.resource.data.userId is string &&
+        request.resource.data.userId == uid() &&
+        !request.resource.data.keys().hasAny(["role", "technicalMetadata", "privateKey", "secret", "uid"]) &&
+        (!request.resource.data.keys().hasAny(["updatedAt"]) || (request.resource.data.updatedAt is string && request.resource.data.updatedAt.size() <= 40)) &&
+        (!request.resource.data.keys().hasAny(["createdAt"]) || (request.resource.data.createdAt is string && request.resource.data.createdAt.size() <= 40)) &&
+        (!request.resource.data.keys().hasAny(["completedAt"]) || (request.resource.data.completedAt is string && request.resource.data.completedAt.size() <= 40)) &&
+        (!request.resource.data.keys().hasAny(["completedLessonIds"]) || (request.resource.data.completedLessonIds is list && request.resource.data.completedLessonIds.size() <= 500));
+    }
+
+    function validUserCreate(userId) {
+      return signedIn() &&
+        uid() == userId &&
+        request.resource.data.uid == userId &&
+        request.resource.data.role == "student" &&
+        request.resource.data.email is string &&
+        request.resource.data.email.size() <= 254 &&
+        request.resource.data.displayName is string &&
+        request.resource.data.displayName.size() <= 80 &&
+        request.resource.data.keys().hasOnly([
+          "uid", "displayName", "email", "photoURL", "role", "createdAt", "updatedAt", "lastLoginAt",
+          "migrationCompleted", "onboardingCompleted", "createdAtServer", "updatedAtServer", "lastLoginAtServer"
+        ]);
+    }
+
+    function validUserUpdate(userId) {
+      return signedIn() &&
+        uid() == userId &&
+        resource.data.uid == userId &&
+        request.resource.data.uid == userId &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "displayName", "email", "photoURL", "updatedAt", "lastLoginAt", "migrationCompleted",
+          "onboardingCompleted", "updatedAtServer", "lastLoginAtServer"
+        ]);
+    }
+
+    match /users/{userId} {
+      allow get: if signedIn() && (uid() == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if validUserCreate(userId);
+      allow update: if validUserUpdate(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /{collectionName}/{documentId} {
+      allow read: if collectionName in [
+        "courses", "modules", "lessons", "exercises", "assessments",
+        "aircraft", "aircraftSystems", "aircraftLimitations", "aircraftPerformance", "aircraftProcedures",
+        "aircraftChecklists", "aircraftTrainings", "aircraftCourseRelations", "aircraftAvionics",
+        "avionics", "avionicsSections", "avionicsComponents", "avionicsProcedures", "avionicsTrainings", "avionicsCourses",
+        "checklists", "checklistItems", "trainings"
+      ] && signedIn() && (isPublished() || isContentEditor());
+
+      allow create, update: if collectionName in [
+        "courses", "modules", "lessons", "exercises", "assessments",
+        "aircraft", "aircraftSystems", "aircraftLimitations", "aircraftPerformance", "aircraftProcedures",
+        "aircraftChecklists", "aircraftTrainings", "aircraftCourseRelations", "aircraftAvionics",
+        "avionics", "avionicsSections", "avionicsComponents", "avionicsProcedures", "avionicsTrainings", "avionicsCourses",
+        "checklists", "checklistItems", "trainings"
+      ] && canWriteContent() && validContentWrite();
+
+      allow delete: if collectionName in [
+        "courses", "modules", "lessons", "exercises", "assessments",
+        "aircraft", "aircraftSystems", "aircraftLimitations", "aircraftPerformance", "aircraftProcedures",
+        "aircraftChecklists", "aircraftTrainings", "aircraftCourseRelations", "aircraftAvionics",
+        "avionics", "avionicsSections", "avionicsComponents", "avionicsProcedures", "avionicsTrainings", "avionicsCourses",
+        "checklists", "checklistItems", "trainings"
+      ] && isAdmin();
+
+      allow read: if collectionName in [
+        "userCourseProgress", "userLessonProgress", "exerciseAttempts", "assessmentAttempts", "reviewItems",
+        "userChecklistSessions", "userTrainingRecords"
+      ] && signedIn() && resource.data.userId == uid();
+
+      allow create, update: if collectionName in [
+        "userCourseProgress", "userLessonProgress", "exerciseAttempts", "assessmentAttempts", "reviewItems",
+        "userChecklistSessions", "userTrainingRecords"
+      ] && validPrivateWrite();
+
+      allow delete: if collectionName in [
+        "userCourseProgress", "userLessonProgress", "exerciseAttempts", "assessmentAttempts", "reviewItems",
+        "userChecklistSessions", "userTrainingRecords"
+      ] && signedIn() && resource.data.userId == uid();
+    }
+  }
+}

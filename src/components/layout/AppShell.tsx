@@ -1,21 +1,45 @@
 "use client";
 
-import { Menu, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
+import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { navigationItems } from "@/data/mockAcademy";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { AuthGate } from "@/components/auth/AuthGate";
+import { AuthProvider, useAuth } from "@/components/auth/AuthProvider";
+import { logout } from "@/services/authService";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
+  return (
+    <AuthProvider>
+      <AppFrame>{children}</AppFrame>
+    </AuthProvider>
+  );
+}
+
+function AppFrame({ children }: Readonly<{ children: ReactNode }>) {
   const pathname = usePathname();
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobileOpen, setMobileOpen] = useState(false);
+  const isAuthPage = pathname === "/login" || pathname === "/cadastro" || pathname === "/recuperar-senha";
 
   const currentPage = navigationItems
     .filter((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))
     .sort((a, b) => b.href.length - a.href.length)[0];
+
+  if (isAuthPage) {
+    return (
+      <div className="min-h-screen bg-aviation-ink text-aviation-white">
+        <main className="flex min-h-screen items-center justify-center px-4 py-10">
+          <Suspense fallback={null}>
+            <AuthGate>{children}</AuthGate>
+          </Suspense>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-aviation-white">
@@ -60,10 +84,15 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
               <Search className="h-4 w-4 text-aviation-cyan" />
               <span>Buscar aulas, checklists ou módulos</span>
             </div>
+            <UserMenu />
           </div>
         </header>
 
-        <main className="min-w-0 max-w-full flex-1 overflow-x-hidden px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:pb-8">{children}</main>
+        <main className="min-w-0 max-w-full flex-1 overflow-x-hidden px-4 py-5 pb-24 sm:px-6 lg:px-8 lg:pb-8">
+          <Suspense fallback={null}>
+            <AuthGate>{children}</AuthGate>
+          </Suspense>
+        </main>
         <MobileNavigation />
       </div>
 
@@ -77,6 +106,31 @@ export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
           <X className="sr-only" />
         </button>
       ) : null}
+    </div>
+  );
+}
+
+function UserMenu() {
+  const { user, profile } = useAuth();
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="hidden items-center gap-3 md:flex">
+      <div className="text-right">
+        <p className="text-sm font-semibold text-white">{profile?.displayName ?? user.displayName ?? "Aluno"}</p>
+        <p className="text-xs text-slate-500">{profile?.role ?? "student"}</p>
+      </div>
+      <button
+        type="button"
+        onClick={() => void logout()}
+        className="focus-ring inline-flex h-10 w-10 items-center justify-center rounded-md border border-white/10 bg-white/5 text-slate-100"
+        aria-label="Sair"
+      >
+        <LogOut className="h-4 w-4" />
+      </button>
     </div>
   );
 }

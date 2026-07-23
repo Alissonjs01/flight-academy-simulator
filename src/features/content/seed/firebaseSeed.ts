@@ -11,6 +11,7 @@ import {
   localAircraftCourseRelations,
   localAircraftDocuments,
   localAircraftLimitationDocuments,
+  localAircraftPerformanceDocuments,
   localAircraftProcedureDocuments,
   localAircraftSystemDocuments,
   localAircraftTrainingDocuments
@@ -37,6 +38,7 @@ export function buildFirebaseSeedPayload() {
       aircraft: localAircraftDocuments,
       aircraftSystems: localAircraftSystemDocuments,
       aircraftLimitations: localAircraftLimitationDocuments,
+      aircraftPerformance: localAircraftPerformanceDocuments,
       aircraftProcedures: localAircraftProcedureDocuments,
       aircraftChecklists: localAircraftChecklistDocuments,
       aircraftTrainings: localAircraftTrainingDocuments,
@@ -77,6 +79,9 @@ export function buildFirebaseSeedPayload() {
       limitationPaths: localAircraftLimitationDocuments
         .filter((limitation) => limitation.aircraftId === aircraft.id)
         .map((limitation) => `aircraft/${aircraft.id}/limitations/${limitation.id}`),
+      performancePaths: localAircraftPerformanceDocuments
+        .filter((performance) => performance.aircraftId === aircraft.id)
+        .map((performance) => `aircraft/${aircraft.id}/performance/${performance.id}`),
       procedurePaths: localAircraftProcedureDocuments
         .filter((procedure) => procedure.aircraftId === aircraft.id)
         .map((procedure) => `aircraft/${aircraft.id}/procedures/${procedure.id}`),

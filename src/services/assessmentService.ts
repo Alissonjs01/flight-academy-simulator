@@ -1,4 +1,4 @@
-import { localContentRepository } from "@/features/content/repositories/localContentRepository";
+import { getContentRepository } from "@/features/content/repositories/repositoryFactory";
 import type { AssessmentResultDocument, FinalAssessmentDocument } from "@/features/content/types";
 import { readLatestAssessmentAttempt, submitAssessmentAttempt } from "@/services/assessmentAttemptService";
 import { unlockCourses } from "@/services/progressService";
@@ -6,10 +6,8 @@ import { unlockCourses } from "@/services/progressService";
 const RESULT_KEY = "flight-academy-simulator:assessment-results:v1";
 const DEFAULT_STUDENT_ID = "local-student";
 
-const repository = localContentRepository;
-
 export async function getFinalAssessmentByCourseSlug(slug: string) {
-  return repository.getFinalAssessmentByCourseSlug(slug);
+  return getContentRepository().getFinalAssessmentByCourseSlug(slug);
 }
 
 export function evaluateFinalAssessment(courseId: string, assessment: FinalAssessmentDocument, answers: Record<string, string>): AssessmentResultDocument {

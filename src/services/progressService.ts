@@ -1,5 +1,6 @@
 import type { LessonDocument, ModuleDocument } from "@/features/content/types";
 import type { LessonProgressState, ProgressSummary, StudentProgressDocument } from "@/features/progress/types";
+import { syncProgressToFirestore } from "@/services/firestorePrivateSyncService";
 
 const STORAGE_KEY = "flight-academy-simulator:student-progress:v1";
 const UNLOCKED_COURSES_KEY = "flight-academy-simulator:unlocked-courses:v1";
@@ -64,6 +65,7 @@ export function writeLocalProgress(progress: StudentProgressDocument) {
   }
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...progress, updatedAt: nowIso() }));
+  syncProgressToFirestore(progress);
 }
 
 export function completeLesson(lessons: LessonDocument[], progress: StudentProgressDocument, lessonId: string): StudentProgressDocument {

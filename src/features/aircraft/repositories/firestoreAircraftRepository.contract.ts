@@ -2,19 +2,21 @@ import type { AircraftRepository } from "@/features/aircraft/repositories/aircra
 
 export type FirestoreAircraftCollectionPath =
   | "aircraft"
-  | "aircraft/{aircraftId}/systems"
-  | "aircraft/{aircraftId}/limitations"
-  | "aircraft/{aircraftId}/procedures"
-  | "aircraft/{aircraftId}/media"
-  | "users/{userId}/aircraftProgress";
+  | "aircraftSystems"
+  | "aircraftLimitations"
+  | "aircraftPerformance"
+  | "aircraftProcedures"
+  | "aircraftMedia"
+  | "userAircraftProgress";
 
 export type FirestoreAircraftRepository = AircraftRepository;
 
 export const firestoreAircraftCollectionPaths: Record<string, FirestoreAircraftCollectionPath> = {
   aircraft: "aircraft",
-  aircraftSystems: "aircraft/{aircraftId}/systems",
-  aircraftLimitations: "aircraft/{aircraftId}/limitations",
-  aircraftProcedures: "aircraft/{aircraftId}/procedures",
-  aircraftMedia: "aircraft/{aircraftId}/media",
-  aircraftProgress: "users/{userId}/aircraftProgress"
+  aircraftSystems: "aircraftSystems",
+  aircraftLimitations: "aircraftLimitations",
+  aircraftPerformance: "aircraftPerformance",
+  aircraftProcedures: "aircraftProcedures",
+  aircraftMedia: "aircraftMedia",
+  aircraftProgress: "userAircraftProgress"
 };

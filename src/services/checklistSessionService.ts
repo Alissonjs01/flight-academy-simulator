@@ -1,4 +1,5 @@
 import type { ChecklistDocument, UserChecklistSessionDocument } from "@/features/checklists/types";
+import { syncChecklistSessionToFirestore } from "@/services/firestorePrivateSyncService";
 
 const SESSION_KEY = "flight-academy-simulator:checklist-sessions:v1";
 const DEFAULT_USER_ID = "local-student";
@@ -92,5 +93,6 @@ function writeChecklistSession(checklist: ChecklistDocument, session: UserCheckl
     progressPercent: calculateChecklistProgress(checklist, session.completedItemIds)
   };
   writeSessions([...sessions.filter((item) => item.checklistId !== checklist.id), nextSession]);
+  syncChecklistSessionToFirestore(nextSession);
   return nextSession;
 }

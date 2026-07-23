@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { AlertTriangle, BookOpen, Gauge, ListChecks, Plane, Settings2, ShieldAlert, SlidersHorizontal, Target } from "lucide-react";
+import { BookOpen, Gauge, ListChecks, Plane, Settings2, ShieldAlert, SlidersHorizontal, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
@@ -9,6 +9,7 @@ import type { AircraftProfile } from "@/features/aircraft/types";
 import { aircraftStudyStatusLabels } from "@/features/aircraft/statusLabels";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 type AircraftDetailProps = {
   profile: AircraftProfile;
@@ -104,11 +105,8 @@ function OverviewTab({ profile }: AircraftDetailProps) {
       <Panel>
         <h2 className="text-xl font-semibold text-white">Visão geral</h2>
         <p className="mt-3 text-sm leading-7 text-slate-300">{aircraft.description}</p>
-        <div className="mt-5 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.08] p-4 text-sm leading-6 text-slate-200">
-          <div className="flex gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-aviation-amber" />
-            <p>Dados técnicos e procedimentos desta página são provisórios quando indicados. Para operação real, consulte os manuais e documentos oficiais adequados.</p>
-          </div>
+        <div className="mt-5">
+          <TechnicalMetadataSummary metadata={aircraft.technicalMetadata} />
         </div>
       </Panel>
       <Panel>
@@ -142,6 +140,7 @@ function PanelTab({ profile }: AircraftDetailProps) {
               <div key={avionic.id} className="rounded-md border border-white/10 bg-white/[0.035] p-3">
                 <p className="font-semibold text-white">{avionic.name}</p>
                 <p className="mt-2 text-sm leading-6 text-slate-400">{avionic.summary}</p>
+                <TechnicalMetadataSummary metadata={avionic.technicalMetadata} compact />
               </div>
             ))
           ) : (
@@ -165,6 +164,7 @@ function SystemsTab({ profile }: AircraftDetailProps) {
             <p className="font-semibold text-white">{item.title}</p>
             <p className="mt-2 text-sm leading-6 text-slate-300">{item.summary}</p>
             <p className="mt-3 text-sm leading-6 text-slate-500">{item.details}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />
@@ -184,6 +184,7 @@ function LimitationsTab({ profile }: AircraftDetailProps) {
             <p className="font-semibold text-white">{item.title}</p>
             <p className="mt-2 text-sm leading-6 text-aviation-amber">{item.value}</p>
             <p className="mt-3 text-sm leading-6 text-slate-400">{item.note}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />
@@ -208,6 +209,7 @@ function ProceduresTab({ profile }: AircraftDetailProps) {
               ))}
             </ul>
             <p className="mt-4 text-sm leading-6 text-aviation-amber">{item.safetyNote}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />
@@ -231,6 +233,7 @@ function ChecklistsTab({ profile }: AircraftDetailProps) {
                 <li key={step}>• {step}</li>
               ))}
             </ul>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />
@@ -251,6 +254,7 @@ function TrainingsTab({ profile }: AircraftDetailProps) {
             <p className="mt-2 font-semibold text-white">{item.title}</p>
             <p className="mt-2 text-sm leading-6 text-slate-300">{item.objective}</p>
             <p className="mt-3 text-sm text-slate-500">{item.duration}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />

@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ExerciseAnswerValue, ExerciseAttemptDocument, ExerciseDocument, OpenAnswerSelfAssessment } from "@/features/content/types";
 import { readLatestAttemptByExercise, submitExerciseAttempt } from "@/services/exerciseAttemptService";
 import { Panel } from "@/components/ui/Panel";
+import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 type ExercisePanelProps = {
   exercise: ExerciseDocument;
@@ -85,6 +86,8 @@ export function ExercisePanel({ exercise, isLocked, onAttemptSaved }: ExercisePa
           <span className="rounded-sm border border-aviation-mint/20 bg-aviation-mint/[0.07] px-2 py-1 text-aviation-mint">{exercise.points} pts</span>
         </div>
       </div>
+
+      <TechnicalMetadataSummary metadata={exercise.technicalMetadata} compact />
 
       {exercise.type === "multiple_choice" ? (
         <div className="grid gap-2">

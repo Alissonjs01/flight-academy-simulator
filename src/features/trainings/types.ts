@@ -1,4 +1,5 @@
 import type { PublicationState } from "@/features/content/types";
+import type { TechnicalMetadata } from "@/features/technical/types";
 
 export type TrainingDifficulty = "Inicial" | "Intermediário" | "Avançado";
 
@@ -26,6 +27,7 @@ export type TrainingDocument = {
   relatedLessonId?: string;
   relatedLessonSlug?: string;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type UserTrainingRecordDocument = {

@@ -10,6 +10,7 @@ import { readChecklistSession, resetChecklistSession, setChecklistMode, toggleCh
 import { EmptyState } from "@/components/ui/StateMessage";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 const allOption = "Todos";
 
@@ -151,6 +152,9 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
           <p className="mt-2">{checklist.studyMode.description}</p>
           <p className="mt-2 text-slate-400">Versão {checklist.version} · Atualizado em {formatDate(checklist.updatedAt)}</p>
           <p className="mt-2 text-aviation-amber">{checklist.notes}</p>
+          <div className="mt-4">
+            <TechnicalMetadataSummary metadata={checklist.technicalMetadata} />
+          </div>
         </div>
       ) : null}
 
@@ -180,6 +184,7 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
                   <summary className="cursor-pointer font-semibold text-aviation-cyan">Explicação e observação</summary>
                   <p className="mt-2">{item.explanation}</p>
                   <p className="mt-2 text-slate-400">{item.observation}</p>
+                  <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
                 </details>
               ) : null}
             </div>

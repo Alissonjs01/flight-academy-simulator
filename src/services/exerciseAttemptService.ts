@@ -7,6 +7,7 @@ import type {
   ReviewItemDocument,
   ReviewItemType
 } from "@/features/content/types";
+import { syncExerciseAttemptToFirestore, syncReviewItemToFirestore } from "@/services/firestorePrivateSyncService";
 
 const ATTEMPTS_KEY = "flight-academy-simulator:exercise-attempts:v1";
 const REVIEW_ITEMS_KEY = "flight-academy-simulator:review-items:v1";
@@ -82,6 +83,7 @@ export function submitExerciseAttempt({ exercise, answer, selfAssessment, person
   };
 
   write(ATTEMPTS_KEY, [...attempts, attempt]);
+  syncExerciseAttemptToFirestore(attempt);
   syncReviewItem(exercise, attempt);
   return attempt;
 }
@@ -171,6 +173,7 @@ function syncReviewItem(exercise: ExerciseDocument, attempt: ExerciseAttemptDocu
   };
 
   write(REVIEW_ITEMS_KEY, [...currentItems.filter((item) => item.id !== reviewItem.id), reviewItem]);
+  syncReviewItemToFirestore(reviewItem);
 }
 
 function shouldCreateReviewItem(exercise: ExerciseDocument, attempt: ExerciseAttemptDocument) {

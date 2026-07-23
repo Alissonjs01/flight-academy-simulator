@@ -1,6 +1,7 @@
 import type { AssessmentAttemptDocument, FinalAssessmentDocument, FinalAssessmentQuestion, ReviewItemDocument } from "@/features/content/types";
 import { unlockCourses } from "@/services/progressService";
 import { readReviewItems } from "@/services/exerciseAttemptService";
+import { syncAssessmentAttemptToFirestore, syncReviewItemToFirestore } from "@/services/firestorePrivateSyncService";
 
 const ASSESSMENT_ATTEMPTS_KEY = "flight-academy-simulator:assessment-attempts:v1";
 const REVIEW_ITEMS_KEY = "flight-academy-simulator:review-items:v1";
@@ -83,6 +84,7 @@ export function submitAssessmentAttempt(
 
   const allAttempts = readAssessmentAttempts();
   write(ASSESSMENT_ATTEMPTS_KEY, [...allAttempts, attempt]);
+  syncAssessmentAttemptToFirestore(attempt);
   unlockCourses(attempt.unlockedCourseIds);
   syncAssessmentReviewItems(attempt, questionScores);
   return attempt;
@@ -140,4 +142,5 @@ function syncAssessmentReviewItems(
     }));
 
   write(REVIEW_ITEMS_KEY, [...currentItems, ...lowScoreItems]);
+  lowScoreItems.forEach(syncReviewItemToFirestore);
 }

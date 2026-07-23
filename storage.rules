@@ -1,0 +1,51 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function role() {
+      return request.auth.token.role;
+    }
+
+    function canManageContentMedia() {
+      return signedIn() && (role() == "admin" || role() == "instructor");
+    }
+
+    function validImage(maxBytes) {
+      return request.resource != null &&
+        request.resource.size <= maxBytes &&
+        request.resource.contentType.matches("image/(jpeg|png|webp)");
+    }
+
+    match /profilePhotos/{userId}/{fileName} {
+      allow read: if signedIn() && request.auth.uid == userId;
+      allow write: if signedIn() && request.auth.uid == userId && validImage(2 * 1024 * 1024);
+      allow delete: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /courseImages/{courseId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if canManageContentMedia() && validImage(5 * 1024 * 1024);
+      allow delete: if canManageContentMedia();
+    }
+
+    match /aircraftImages/{aircraftId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if canManageContentMedia() && validImage(8 * 1024 * 1024);
+      allow delete: if canManageContentMedia();
+    }
+
+    match /avionicsImages/{avionicId}/{fileName} {
+      allow read: if signedIn();
+      allow write: if canManageContentMedia() && validImage(8 * 1024 * 1024);
+      allow delete: if canManageContentMedia();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

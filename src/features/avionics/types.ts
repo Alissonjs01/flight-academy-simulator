@@ -1,4 +1,5 @@
 import type { PublicationState } from "@/features/content/types";
+import type { TechnicalMetadata } from "@/features/technical/types";
 
 export type AvionicStudyStatus = "current" | "available" | "planned" | "paused";
 
@@ -13,6 +14,7 @@ export type AvionicMediaReference = {
   publicationState: PublicationState;
   createdAt: string;
   updatedAt: string;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicDocument = {
@@ -33,6 +35,7 @@ export type AvionicDocument = {
   publicationState: PublicationState;
   createdAt: string;
   updatedAt: string;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicSectionDocument = {
@@ -51,6 +54,7 @@ export type AvionicSectionDocument = {
   internalLessonSlugs: string[];
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicComponentDocument = {
@@ -61,6 +65,7 @@ export type AvionicComponentDocument = {
   sectionSlug: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicProcedureDocument = {
@@ -72,6 +77,7 @@ export type AvionicProcedureDocument = {
   note: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicTrainingDocument = {
@@ -84,6 +90,7 @@ export type AvionicTrainingDocument = {
   status: "available" | "planned";
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicCourseRelationDocument = {
@@ -95,6 +102,7 @@ export type AvionicCourseRelationDocument = {
   relation: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AvionicProfile = {

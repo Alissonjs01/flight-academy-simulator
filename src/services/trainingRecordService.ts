@@ -1,4 +1,5 @@
 import type { TrainingDocument, TrainingStatus, UserTrainingRecordDocument } from "@/features/trainings/types";
+import { syncTrainingRecordToFirestore } from "@/services/firestorePrivateSyncService";
 
 const RECORD_KEY = "flight-academy-simulator:training-records:v1";
 const DEFAULT_USER_ID = "local-student";
@@ -56,6 +57,7 @@ export function saveTrainingRecord(
   };
 
   writeRecords([...records.filter((record) => record.trainingId !== training.id), nextRecord]);
+  syncTrainingRecordToFirestore(nextRecord);
   return nextRecord;
 }
 

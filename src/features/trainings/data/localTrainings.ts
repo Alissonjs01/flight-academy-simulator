@@ -1,10 +1,19 @@
 import type { TrainingDifficulty, TrainingDocument } from "@/features/trainings/types";
+import { trainingExerciseMetadata } from "@/features/technical/defaults";
 
 const aircraftId = "aircraft-cessna-408-skycourier";
 const aircraftName = "Cessna 408 SkyCourier";
 const courseId = "course-fundamentos-pilotagem";
 const courseSlug = "fundamentos-da-pilotagem";
 const simulatorNotice = "Treinamento de simulador. Não representa procedimento aeronáutico oficial.";
+const c408TrainingMetadata = trainingExerciseMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: aircraftName,
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAdaptationNotes: "Cenário didático para simulador; não usar como procedimento operacional real.",
+  knownSimulatorDifferences: "Diferenças entre aeronave real e implementação do simulador ainda não foram catalogadas."
+});
 
 export const localTrainingDocuments: TrainingDocument[] = [
   createTraining("training-c408-voo-nivelado", "voo-nivelado-c408", "Voo nivelado", "Inicial", "25 min", "Qualquer aeroporto com área livre", "Mesmo aeroporto ou área local", "Céu claro, vento leve", "Manter altitude, proa e velocidade com pequenas correções.", ["Estabilize a aeronave em altitude segura.", "Faça pequenas alterações de atitude e potência.", "Observe tendência antes de corrigir."], ["Altitude mantida dentro da meta pessoal.", "Correções pequenas e espaçadas.", "Aluno consegue verbalizar atitude, potência e desempenho."], "horizonte-artificial"),
@@ -53,6 +62,7 @@ function createTraining(
     relatedCourseId,
     relatedCourseSlug,
     relatedLessonSlug,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: c408TrainingMetadata
   };
 }

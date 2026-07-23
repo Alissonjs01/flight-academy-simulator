@@ -7,12 +7,33 @@ import type {
   AvionicSectionDocument,
   AvionicTrainingDocument
 } from "@/features/avionics/types";
+import { provisionalTechnicalMetadata, simulatorAdaptationMetadata, trainingExerciseMetadata } from "@/features/technical/defaults";
 
 const createdAt = "2026-07-23T00:00:00.000Z";
 const updatedAt = "2026-07-23T00:00:00.000Z";
 const avionicId = "avionic-garmin-g1000-nxi";
 const provisional =
   "Conteúdo introdutório e provisório. A operação real deve ser verificada nos manuais adequados, documentação oficial, versão exata do equipamento e configuração da aeronave no simulador.";
+const g1000TechnicalMetadata = provisionalTechnicalMetadata({
+  sourceTitle: "Conteúdo local provisório sobre Garmin G1000 NXi",
+  sourceOrganization: "Flight Academy Simulator",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorAdaptationNotes: "Conteúdo preparado para estudo no simulador, pendente de comparação com manual oficial do equipamento e configuração exata da aeronave.",
+  knownSimulatorDifferences: "Diferenças entre o equipamento real, versões do G1000 NXi e implementação do simulador ainda não foram catalogadas."
+});
+const g1000SimulatorAdaptationMetadata = simulatorAdaptationMetadata({
+  sourceTitle: "Adaptação local provisória para Garmin G1000 NXi no simulador",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  knownSimulatorDifferences: "Diferenças entre versões reais do aviônico e implementação do simulador ainda não foram catalogadas."
+});
+const g1000TrainingMetadata = trainingExerciseMetadata({
+  sourceTitle: "Treinamento didático local para Garmin G1000 NXi",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorAdaptationNotes: "Treinamento para simulador; não representa procedimento operacional oficial."
+});
 
 function media(kind: AvionicMediaReference["kind"], slug: string, alt: string): AvionicMediaReference {
   return {
@@ -47,7 +68,8 @@ export const localAvionicDocuments: AvionicDocument[] = [
     studyStatus: "current",
     publicationState: "published",
     createdAt,
-    updatedAt
+    updatedAt,
+    technicalMetadata: g1000TechnicalMetadata
   }
 ];
 
@@ -87,7 +109,8 @@ export const localAvionicSectionDocuments: AvionicSectionDocument[] = sections.m
   relatedAircraftIds: ["aircraft-cessna-408-skycourier"],
   internalLessonSlugs: [section.lessonSlug],
   order: index + 1,
-  publicationState: "published"
+  publicationState: "published",
+  technicalMetadata: g1000TechnicalMetadata
 }));
 
 export const localAvionicComponentDocuments: AvionicComponentDocument[] = [
@@ -106,7 +129,8 @@ export const localAvionicProcedureDocuments: AvionicProcedureDocument[] = [
     steps: ["Confirmar waypoint desejado", "Acionar Direct-To no simulador", "Conferir curso ativo", "Monitorar CDI/HSI antes de confiar na rota"],
     note: provisional,
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000SimulatorAdaptationMetadata
   },
   {
     id: "procedure-g1000-flight-plan",
@@ -116,7 +140,8 @@ export const localAvionicProcedureDocuments: AvionicProcedureDocument[] = [
     steps: ["Inserir rota provisória", "Conferir sequência de waypoints", "Comparar mapa e expectativa mental", "Corrigir descontinuidades antes do voo"],
     note: provisional,
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000SimulatorAdaptationMetadata
   },
   {
     id: "procedure-g1000-ils-rnav",
@@ -126,7 +151,8 @@ export const localAvionicProcedureDocuments: AvionicProcedureDocument[] = [
     steps: ["Identificar tipo de aproximação", "Conferir fonte de navegação", "Revisar mínimos e perfil", "Monitorar captura lateral e vertical"],
     note: provisional,
     order: 3,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000SimulatorAdaptationMetadata
   }
 ];
 
@@ -140,7 +166,8 @@ export const localAvionicTrainingDocuments: AvionicTrainingDocument[] = [
     duration: "25 min",
     status: "planned",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000TrainingMetadata
   },
   {
     id: "training-g1000-c408-approach",
@@ -151,7 +178,8 @@ export const localAvionicTrainingDocuments: AvionicTrainingDocument[] = [
     duration: "40 min",
     status: "planned",
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000TrainingMetadata
   }
 ];
 
@@ -164,7 +192,8 @@ export const localAvionicCourseRelations: AvionicCourseRelationDocument[] = [
     slug: "garmin-g1000-nxi",
     relation: "Curso estrutural inicial para aprender a lógica do G1000 NXi antes de navegação IFR mais avançada.",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000TrainingMetadata
   }
 ];
 
@@ -176,6 +205,7 @@ function component(id: string, title: string, summary: string, sectionSlug: stri
     summary,
     sectionSlug,
     order,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: g1000TechnicalMetadata
   };
 }

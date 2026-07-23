@@ -6,6 +6,7 @@ import {
   localAircraftCourseRelations,
   localAircraftDocuments,
   localAircraftLimitationDocuments,
+  localAircraftPerformanceDocuments,
   localAircraftProcedureDocuments,
   localAircraftSystemDocuments,
   localAircraftTrainingDocuments
@@ -61,6 +62,7 @@ export const localAircraftRepository: AircraftRepository = {
       aircraft,
       systems: byOrder(localAircraftSystemDocuments.filter((system) => system.aircraftId === aircraft.id)),
       limitations: byOrder(localAircraftLimitationDocuments.filter((limitation) => limitation.aircraftId === aircraft.id)),
+      performances: byOrder(localAircraftPerformanceDocuments.filter((performance) => performance.aircraftId === aircraft.id)),
       procedures: byOrder(localAircraftProcedureDocuments.filter((procedure) => procedure.aircraftId === aircraft.id)),
       checklists: byOrder(localAircraftChecklistDocuments.filter((checklist) => checklist.aircraftId === aircraft.id)),
       trainings: byOrder(localAircraftTrainingDocuments.filter((training) => training.aircraftId === aircraft.id)),

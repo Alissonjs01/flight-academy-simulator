@@ -1,3 +1,5 @@
+import type { TechnicalMetadata } from "@/features/technical/types";
+
 export type PublicationState = "published" | "draft";
 
 export type LearningLevel = "Inicial" | "Intermediário" | "Avançado";
@@ -11,6 +13,7 @@ export type ContentBlock = {
   type: "paragraph" | "callout" | "checklist";
   text?: string;
   items?: string[];
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type CourseDocument = {
@@ -33,6 +36,7 @@ export type CourseDocument = {
   updatedAt: string;
   order: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type ModuleDocument = {
@@ -47,6 +51,7 @@ export type ModuleDocument = {
   progressPercent: number;
   prerequisites: string[];
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type LessonDocument = {
@@ -78,6 +83,7 @@ export type LessonDocument = {
     canGoBack: boolean;
   };
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type FinalAssessmentQuestion = {
@@ -87,6 +93,7 @@ export type FinalAssessmentQuestion = {
   weight: number;
   concept: string;
   moduleId: string;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type FinalAssessmentDocument = {
@@ -104,6 +111,7 @@ export type FinalAssessmentDocument = {
   shuffleQuestions: boolean;
   timeLimitMinutes?: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type AssessmentResultDocument = {
@@ -150,6 +158,7 @@ export type ExerciseDocument = {
   order: number;
   points: number;
   publicationState: PublicationState;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type ExerciseAnswerValue = string | boolean;

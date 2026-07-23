@@ -12,6 +12,7 @@ import { EmptyState, LoadingState } from "@/components/ui/StateMessage";
 import { Panel } from "@/components/ui/Panel";
 import { ExercisePanel } from "@/components/exercise/ExercisePanel";
 import { summarizeLessonExercises } from "@/services/exerciseAttemptService";
+import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 export function LessonStudy({ context }: { context: LessonContext }) {
   const orderedLessons = useMemo(() => context.orderedLessons, [context.orderedLessons]);
@@ -76,6 +77,10 @@ export function LessonStudy({ context }: { context: LessonContext }) {
         <div className="mt-6 flex items-start gap-3 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.08] p-4 text-sm leading-6 text-slate-200">
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-aviation-amber" />
           <p>{context.course.disclaimer}</p>
+        </div>
+
+        <div className="mt-6">
+          <TechnicalMetadataSummary metadata={context.lesson.technicalMetadata} />
         </div>
 
         <div className="mt-6 flex flex-wrap gap-2">

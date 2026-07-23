@@ -1,4 +1,5 @@
 import type { PublicationState } from "@/features/content/types";
+import type { TechnicalMetadata } from "@/features/technical/types";
 
 export type FlightPhase =
   | "preparacao"
@@ -36,6 +37,7 @@ export type ChecklistItemDocument = {
   kind: ChecklistItemKind;
   status: ChecklistItemStatus;
   explanation?: string;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type ChecklistDocument = {
@@ -54,6 +56,7 @@ export type ChecklistDocument = {
   updatedAt: string;
   studyMode: ChecklistModeSettings;
   operationalMode: ChecklistModeSettings;
+  technicalMetadata?: TechnicalMetadata;
 };
 
 export type UserChecklistSessionDocument = {

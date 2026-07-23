@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { AlertTriangle, BookOpen, Gauge, ImageIcon, ListChecks, Plane, Target } from "lucide-react";
+import { BookOpen, Gauge, ImageIcon, ListChecks, Plane, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
@@ -9,6 +9,7 @@ import type { AvionicProfile, AvionicSectionDocument } from "@/features/avionics
 import { avionicStudyStatusLabels } from "@/features/avionics/statusLabels";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 type AvionicDetailProps = {
   profile: AvionicProfile;
@@ -97,11 +98,8 @@ function OverviewTab({ profile }: AvionicDetailProps) {
       <Panel>
         <h2 className="text-xl font-semibold text-white">Visão geral</h2>
         <p className="mt-3 text-sm leading-7 text-slate-300">{profile.avionic.description}</p>
-        <div className="mt-5 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.08] p-4 text-sm leading-6 text-slate-200">
-          <div className="flex gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-aviation-amber" />
-            <p>Conteúdo introdutório para simulador. Operação real deve ser conferida nos manuais adequados, documentação oficial e configuração exata da aeronave.</p>
-          </div>
+        <div className="mt-5">
+          <TechnicalMetadataSummary metadata={profile.avionic.technicalMetadata} />
         </div>
       </Panel>
       <Panel>
@@ -124,6 +122,9 @@ function SectionTab({ section }: { section: AvionicSectionDocument }) {
         <p className="text-xs uppercase tracking-[0.18em] text-aviation-cyan">Seção</p>
         <h2 className="mt-2 text-xl font-semibold text-white">{section.title}</h2>
         <p className="mt-3 text-sm leading-7 text-slate-300">{section.body}</p>
+        <div className="mt-5">
+          <TechnicalMetadataSummary metadata={section.technicalMetadata} />
+        </div>
         <div className="mt-5">
           <MediaPanel alt={section.image?.alt ?? section.title} caption={section.image?.caption} compact />
         </div>
@@ -160,6 +161,7 @@ function ComponentsTab({ profile }: AvionicDetailProps) {
             <p className="font-semibold text-white">{item.title}</p>
             <p className="mt-2 text-sm leading-6 text-slate-300">{item.summary}</p>
             <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">{item.sectionSlug}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />
@@ -183,6 +185,7 @@ function ProceduresTab({ profile }: AvionicDetailProps) {
               ))}
             </ul>
             <p className="mt-4 text-sm leading-6 text-aviation-amber">{item.note}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />
@@ -203,6 +206,7 @@ function TrainingsTab({ profile }: AvionicDetailProps) {
             <p className="mt-2 font-semibold text-white">{item.title}</p>
             <p className="mt-2 text-sm leading-6 text-slate-300">{item.objective}</p>
             <p className="mt-3 text-sm text-slate-500">{item.duration}</p>
+            <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />
           </>
         )}
       />

@@ -1,16 +1,14 @@
 import type { AvionicFilters } from "@/features/avionics/types";
-import { localAvionicsRepository } from "@/features/avionics/repositories/localAvionicsRepository";
-
-const repository = localAvionicsRepository;
+import { getAvionicsRepository } from "@/features/avionics/repositories/repositoryFactory";
 
 export async function listAvionics(filters?: AvionicFilters) {
-  return repository.listAvionics(filters);
+  return getAvionicsRepository().listAvionics(filters);
 }
 
 export async function getAvionicBySlug(slug: string) {
-  return repository.getAvionicBySlug(slug);
+  return getAvionicsRepository().getAvionicBySlug(slug);
 }
 
 export async function getAvionicProfileBySlug(slug: string) {
-  return repository.getAvionicProfileBySlug(slug);
+  return getAvionicsRepository().getAvionicProfileBySlug(slug);
 }

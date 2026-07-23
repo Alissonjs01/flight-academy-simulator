@@ -1,4 +1,5 @@
 import type { ChecklistDocument, ChecklistItemDocument, FlightPhase } from "@/features/checklists/types";
+import { simulatorAdaptationMetadata } from "@/features/technical/defaults";
 
 const aircraftId = "aircraft-cessna-408-skycourier";
 const aircraftName = "Cessna 408 SkyCourier";
@@ -8,6 +9,15 @@ const simulatorNotice =
 
 export const checklistDisclaimer =
   "Os checklists da plataforma são destinados ao uso em simuladores. Eles não substituem checklists oficiais, QRH, POH, AFM ou manuais do fabricante.";
+const c408ChecklistMetadata = simulatorAdaptationMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: aircraftName,
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAdaptationNotes: "Checklist de estudo criado para simulador e pendente de validação contra checklist oficial aplicável.",
+  knownSimulatorDifferences: "Diferenças entre checklist oficial, implementação da aeronave no simulador e fluxo didático ainda não foram catalogadas.",
+  revisionNotes: "Não usar como procedimento real ou checklist oficial."
+});
 
 export const localChecklistDocuments: ChecklistDocument[] = [
   createChecklist({
@@ -103,7 +113,8 @@ function createChecklist(input: ChecklistInput): ChecklistDocument {
     order: index + 1,
     kind,
     status: "pending",
-    explanation: observation
+    explanation: observation,
+    technicalMetadata: c408ChecklistMetadata
   }));
 
   return {
@@ -127,6 +138,7 @@ function createChecklist(input: ChecklistInput): ChecklistDocument {
     operationalMode: {
       enabled: true,
       description: "Interface compacta para marcar itens rapidamente no iPad durante treino em simulador."
-    }
+    },
+    technicalMetadata: c408ChecklistMetadata
   };
 }

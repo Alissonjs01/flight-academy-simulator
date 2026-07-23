@@ -1,16 +1,14 @@
 import type { AircraftFilters } from "@/features/aircraft/types";
-import { localAircraftRepository } from "@/features/aircraft/repositories/localAircraftRepository";
-
-const repository = localAircraftRepository;
+import { getAircraftRepository } from "@/features/aircraft/repositories/repositoryFactory";
 
 export async function listAircraft(filters?: AircraftFilters) {
-  return repository.listAircraft(filters);
+  return getAircraftRepository().listAircraft(filters);
 }
 
 export async function getAircraftBySlug(slug: string) {
-  return repository.getAircraftBySlug(slug);
+  return getAircraftRepository().getAircraftBySlug(slug);
 }
 
 export async function getAircraftProfileBySlug(slug: string) {
-  return repository.getAircraftProfileBySlug(slug);
+  return getAircraftRepository().getAircraftProfileBySlug(slug);
 }

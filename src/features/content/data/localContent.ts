@@ -5,9 +5,32 @@ import type {
   LessonDocument,
   ModuleDocument
 } from "@/features/content/types";
+import { educationalExplanationMetadata, trainingExerciseMetadata } from "@/features/technical/defaults";
 
 export const simulatorOnlyDisclaimer =
   "Este curso é destinado exclusivamente ao aprendizado em simuladores de voo e não substitui formação aeronáutica oficial, instrução prática, manuais da aeronave, regulamentos ou orientação de instrutores certificados.";
+const courseTechnicalMetadata = educationalExplanationMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAdaptationNotes: "Conteúdo educacional para simulador, pendente de validação técnica por fonte aplicável quando tratar de operação, sistemas ou performance.",
+  knownSimulatorDifferences: "Diferenças entre aeronave real, aviônicos reais e implementação do simulador devem ser registradas por aula quando identificadas."
+});
+const lessonTechnicalMetadata = educationalExplanationMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  revisionNotes: "Aula didática local. Não usar como SOP, AFM, POH, FCOM, QRH ou manual oficial."
+});
+const exerciseTechnicalMetadata = trainingExerciseMetadata({
+  aircraftManufacturer: "Cessna",
+  aircraftModel: "408 SkyCourier",
+  simulatorAircraftVariant: "Cessna 408 SkyCourier",
+  simulatorPlatform: "Microsoft Flight Simulator",
+  simulatorAdaptationNotes: "Exercício didático para simulador; não representa procedimento aeronáutico oficial."
+});
 
 type LessonSpec = {
   title: string;
@@ -49,7 +72,8 @@ export const localCourseDocuments: CourseDocument[] = [
     prerequisites: ["Microsoft Flight Simulator instalado", "Controles básicos configurados", "Cessna 408 SkyCourier disponível no simulador"],
     updatedAt: "2026-07-23",
     order: 1,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: courseTechnicalMetadata
   },
   {
     id: "course-garmin-g1000-nxi",
@@ -70,7 +94,8 @@ export const localCourseDocuments: CourseDocument[] = [
     prerequisites: ["Concluir Fundamentos da Pilotagem"],
     updatedAt: "2026-07-23",
     order: 2,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: courseTechnicalMetadata
   },
   {
     id: "course-navegacao-ifr",
@@ -91,7 +116,8 @@ export const localCourseDocuments: CourseDocument[] = [
     prerequisites: ["Garmin G1000 NXi", "Navegação básica"],
     updatedAt: "2026-07-23",
     order: 3,
-    publicationState: "draft"
+    publicationState: "draft",
+    technicalMetadata: courseTechnicalMetadata
   }
 ];
 
@@ -357,7 +383,8 @@ export const localExerciseDocuments: ExerciseDocument[] = localLessonDocuments.f
       difficulty: "facil",
       order: 1,
       points: 10,
-      publicationState: "published"
+      publicationState: "published",
+      technicalMetadata: exerciseTechnicalMetadata
     },
     {
       id: `${baseId}-true-false`,
@@ -372,7 +399,8 @@ export const localExerciseDocuments: ExerciseDocument[] = localLessonDocuments.f
       difficulty: "facil",
       order: 2,
       points: 5,
-      publicationState: "published"
+      publicationState: "published",
+      technicalMetadata: exerciseTechnicalMetadata
     },
     {
       id: `${baseId}-open-answer`,
@@ -386,7 +414,8 @@ export const localExerciseDocuments: ExerciseDocument[] = localLessonDocuments.f
       difficulty: "medio",
       order: 3,
       points: 15,
-      publicationState: "published"
+      publicationState: "published",
+      technicalMetadata: exerciseTechnicalMetadata
     }
   ];
 });
@@ -457,7 +486,8 @@ export const localFinalAssessmentDocuments: FinalAssessmentDocument[] = [
     allowRetake: true,
     shuffleQuestions: true,
     timeLimitMinutes: 30,
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: exerciseTechnicalMetadata
   }
 ];
 
@@ -513,6 +543,7 @@ function createLessonDocument(item: LessonSpec): LessonDocument {
     exerciseIds: [`exercise-${item.slug}-multiple-choice`, `exercise-${item.slug}-true-false`, `exercise-${item.slug}-open-answer`],
     status: "not_started",
     actions: { canComplete: true, canContinue: true, canGoBack: item.order > 1 },
-    publicationState: "published"
+    publicationState: "published",
+    technicalMetadata: lessonTechnicalMetadata
   };
 }
