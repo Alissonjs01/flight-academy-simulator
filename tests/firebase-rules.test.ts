@@ -49,6 +49,14 @@ describe("Firestore Security Rules", () => {
     await assertFails(getDoc(doc(db, "courses", "course-draft")));
   });
 
+  it("bloqueia aluno lendo conteúdo arquivado mesmo com publicationState publicado", async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "courses", "course-archived"), { ...publishedCourse("course-archived"), archivedAt: "2026-07-23T00:00:00.000Z" });
+    });
+    const db = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
+    await assertFails(getDoc(doc(db, "courses", "course-archived")));
+  });
+
   it("permite aluno alterar o próprio progresso", async () => {
     const db = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
     await assertSucceeds(setDoc(doc(db, "userCourseProgress", "student-a_course"), privateProgress("student-a")));

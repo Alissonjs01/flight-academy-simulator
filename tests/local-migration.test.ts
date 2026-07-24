@@ -6,6 +6,7 @@ const keys = {
   exerciseAttempts: "flight-academy-simulator:exercise-attempts:v1",
   reviewItems: "flight-academy-simulator:review-items:v1",
   assessmentAttempts: "flight-academy-simulator:assessment-attempts:v1",
+  assessmentResults: "flight-academy-simulator:assessment-results:v1",
   checklistSessions: "flight-academy-simulator:checklist-sessions:v1",
   trainingRecords: "flight-academy-simulator:training-records:v1"
 };
@@ -47,8 +48,10 @@ describe("migração localStorage", () => {
   it("exclui dados privados locais", () => {
     installLocalStorage();
     window.localStorage.setItem(keys.progress, JSON.stringify({ completedLessonIds: ["lesson-a"] }));
+    window.localStorage.setItem(keys.assessmentResults, JSON.stringify([{ id: "result-a" }]));
     clearPrivateLocalData();
     expect(window.localStorage.getItem(keys.progress)).toBeNull();
+    expect(window.localStorage.getItem(keys.assessmentResults)).toBeNull();
   });
 });
 

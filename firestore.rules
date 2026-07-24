@@ -33,7 +33,8 @@ service cloud.firestore {
     }
 
     function isPublished() {
-      return resource.data.publicationState == "published";
+      return resource.data.publicationState == "published" &&
+        (!resource.data.keys().hasAny(["archivedAt"]) || resource.data.archivedAt == null);
     }
 
     function validPublicationState() {

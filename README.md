@@ -22,9 +22,40 @@ npm run dev
 http://localhost:3000
 ```
 
+## Estado atual
+
+Esta versao esta pronta para testes locais e com Firebase Emulator Suite. Ela ainda nao esta conectada a um projeto Firebase real, nao possui `.firebaserc`, nao possui `.env.local` real e nao possui remote GitHub configurado.
+
+Funcionalidades reais no codigo:
+
+- Firebase Authentication implementado para cadastro, login, logout e recuperacao de senha.
+- Firestore implementado para perfis, progresso, tentativas, revisoes e conteudo quando configurado.
+- Storage implementado para imagens permitidas.
+- Security Rules e testes automatizados.
+- Painel administrativo protegido por papeis.
+- PWA com manifest, service worker, tela offline e configuracoes.
+
+Funcionalidades que ainda dependem de configuracao externa:
+
+- Login em Firebase real.
+- Firestore real.
+- Storage real.
+- Primeiro administrador real.
+- Seed em projeto real.
+- GitHub remoto.
+- Deploy/publicacao.
+- Teste fisico no iPad/Safari.
+
 ## Comandos uteis
 
 ```bash
+npm run dev
+npm run dev:real
+npm run dev:emulators
+npm run emulators
+npm run test:pwa
+npm run test:rules
+npm run test:firebase
 npm run lint
 npm run typecheck
 npm run build
@@ -53,13 +84,16 @@ npm run build
 - Curso Garmin G1000 NXi — Fundamentos com 12 modulos e aulas introdutorias.
 - Area de checklists com modo de estudo, modo operacional, progresso local e aviso de uso exclusivo em simulador.
 - Area de treinamentos praticos para C408 com relato, nota pessoal e status salvos localmente.
-- Repositorios e servicos locais preparados para uma implementacao futura com Firebase.
-- Progresso, tentativas e revisoes temporarios salvos no localStorage.
+- Repositorios locais e Firestore preparados por camada de servicos.
+- Progresso, tentativas e revisoes salvos localmente quando Firebase nao esta configurado e sincronizados com Firestore quando ha usuario autenticado.
 - Metadados de fidelidade tecnica, fonte, variante, status de verificacao e revisao preparados nos modelos de conteudo tecnico.
+- Firebase Authentication, Firestore, Storage, Security Rules e Emulator Suite implementados.
+- Painel administrativo funcional para gestao gradual de conteudos.
+- Progressive Web App instalavel com estrategia conservadora de cache.
 
 ## Observacao
 
-Esta versao ainda nao possui banco de dados real, autenticacao real nem painel administrativo funcional. Os dados estao em arquivos locais para demonstrar a interface.
+O codigo de Firebase e autenticacao e real, mas ainda aguarda as variaveis do seu projeto Firebase. Sem `.env.local`, a aplicacao mostra mensagem de configuracao ausente e nao autentica em producao. Para desenvolvimento seguro, use a Firebase Emulator Suite. Nao use o projeto `gestao-frota-bus` para esta plataforma.
 
 ## Política de fidelidade técnica e fontes aeronáuticas
 
@@ -150,7 +184,9 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 NEXT_PUBLIC_USE_FIREBASE_EMULATORS=false
 NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE=local
+NEXT_PUBLIC_ENABLE_PWA_IN_DEV=false
 FIREBASE_PROJECT_ID=...
+CONFIRM_REAL_FIREBASE_SEED=
 ```
 
 `NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE=local` mantem os Server Components usando conteudo local. Use `firestore` somente quando houver uma estrategia de leitura autenticada no servidor ou paginas de conteudo client-side. Os dados privados do aluno ja sao gravados no Firestore quando o usuario esta autenticado.
@@ -168,7 +204,7 @@ npm run typecheck
 npm run build
 ```
 
-Para usar emuladores na aplicacao local, defina `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` em `.env.local` e rode `npm run emulators` em paralelo ao `npm run dev`.
+Para usar emuladores na aplicacao local, defina `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` em `.env.local` e rode `npm run emulators` em paralelo ao `npm run dev`, ou use `npm run dev:emulators`.
 
 ### Login
 
@@ -187,6 +223,8 @@ Ao autenticar, a plataforma detecta chaves locais reconhecidas de progresso, exe
 ### Seed de conteudo
 
 O seed idempotente esta em `scripts/seedFirestore.ts`. Ele carrega cursos, modulos, aulas, exercicios, avaliacoes, Cessna 408 SkyCourier, Garmin G1000 NXi, checklists e treinamentos usando IDs estaveis. Executar novamente atualiza os mesmos documentos sem duplicar.
+
+O seed em projeto real e bloqueado por padrao. Para executar fora do emulador, defina `CONFIRM_REAL_FIREBASE_SEED` com exatamente o mesmo `projectId` de destino.
 
 Conteudos tecnicos provisórios permanecem com `contentClassification: provisional_unverified` e `verificationStatus: pending_verification`.
 
@@ -419,3 +457,11 @@ Ainda devem ser conferidos manualmente quando voce estiver com os dispositivos:
 - Chrome e Edge instalados no Windows.
 
 Nao houve deploy nem validacao em Firebase real nesta etapa.
+
+## Pre-publicacao
+
+Antes de conectar Firebase real, GitHub remoto ou publicar, siga o roteiro em `PRE_PUBLICATION_CHECKLIST.md`.
+
+Prontidao atual: pronto para testes com Firebase real, mas nao pronto para publicacao. Publicacao exige Firebase real validado, regras implantadas, Storage real testado, GitHub configurado, deploy e teste em dispositivo real.
+
+Nota de dependencias: `next`, `eslint-config-next` e `postcss` foram atualizados para patches mais recentes dentro da linha atual. `npm audit` ainda reporta vulnerabilidades que exigem salto maior de Next/ESLint/Firebase tooling ou alteracoes potencialmente quebradoras. Antes de publicacao, planeje uma etapa dedicada de upgrade maior e validacao completa.

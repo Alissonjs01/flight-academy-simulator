@@ -11,6 +11,7 @@ const LOCAL_KEYS = {
   exerciseAttempts: "flight-academy-simulator:exercise-attempts:v1",
   reviewItems: "flight-academy-simulator:review-items:v1",
   assessmentAttempts: "flight-academy-simulator:assessment-attempts:v1",
+  assessmentResults: "flight-academy-simulator:assessment-results:v1",
   checklistSessions: "flight-academy-simulator:checklist-sessions:v1",
   trainingRecords: "flight-academy-simulator:training-records:v1"
 } as const;
