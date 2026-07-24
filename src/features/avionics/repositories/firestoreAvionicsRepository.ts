@@ -24,6 +24,10 @@ async function listByAvionic<T extends { id: string; avionicId: string; order: n
 }
 
 function matchesFilters(avionic: AvionicDocument, filters?: AvionicFilters) {
+  if (avionic.publicationState !== "published") {
+    return false;
+  }
+
   const normalizedQuery = filters?.query?.trim().toLocaleLowerCase("pt-BR") ?? "";
   const haystack = [avionic.name, avionic.manufacturer, avionic.version, avionic.description].join(" ").toLocaleLowerCase("pt-BR");
 

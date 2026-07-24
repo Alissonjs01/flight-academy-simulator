@@ -32,6 +32,10 @@ function matchesText(aircraft: AircraftDocument, query?: string) {
 }
 
 function matchesFilters(aircraft: AircraftDocument, filters?: AircraftFilters) {
+  if (aircraft.publicationState !== "published") {
+    return false;
+  }
+
   const categoryMatches = !filters?.category || filters.category === "Todos" || aircraft.category === filters.category;
   const statusMatches = !filters?.studyStatus || filters.studyStatus === "Todos" || aircraft.studyStatus === filters.studyStatus;
 

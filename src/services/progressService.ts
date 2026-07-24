@@ -1,5 +1,6 @@
 import type { LessonDocument, ModuleDocument } from "@/features/content/types";
 import type { LessonProgressState, ProgressSummary, StudentProgressDocument } from "@/features/progress/types";
+import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase/client";
 import { syncProgressToFirestore } from "@/services/firestorePrivateSyncService";
 
 const STORAGE_KEY = "flight-academy-simulator:student-progress:v1";
@@ -12,14 +13,14 @@ function nowIso() {
 
 export function createInitialProgress(lessons: LessonDocument[]): StudentProgressDocument {
   const firstLesson = lessons[0];
-  const secondLesson = lessons[1];
+  const studentId = getCurrentStudentId();
 
   return {
-    id: `progress-${DEFAULT_STUDENT_ID}`,
-    studentId: DEFAULT_STUDENT_ID,
-    completedLessonIds: firstLesson ? [firstLesson.id] : [],
-    currentLessonId: secondLesson?.id ?? firstLesson?.id,
-    lastLessonId: secondLesson?.id ?? firstLesson?.id,
+    id: `progress-${studentId}`,
+    studentId,
+    completedLessonIds: [],
+    currentLessonId: firstLesson?.id,
+    lastLessonId: undefined,
     updatedAt: nowIso()
   };
 }
@@ -33,12 +34,16 @@ export function readLocalProgress(lessons: LessonDocument[]): StudentProgressDoc
     const storedValue = window.localStorage.getItem(STORAGE_KEY);
 
     if (!storedValue) {
-      const initialProgress = createInitialProgress(lessons);
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(initialProgress));
-      return initialProgress;
+      return createInitialProgress(lessons);
     }
 
     const parsed = JSON.parse(storedValue) as Partial<StudentProgressDocument>;
+    const currentStudentId = getCurrentStudentId();
+    const ownerId = getStoredOwnerId(parsed);
+    if (currentStudentId !== DEFAULT_STUDENT_ID && ownerId && ownerId !== currentStudentId && ownerId !== DEFAULT_STUDENT_ID) {
+      return createInitialProgress(lessons);
+    }
+
     const lessonIds = new Set(lessons.map((lesson) => lesson.id));
     const completedLessonIds = Array.isArray(parsed.completedLessonIds)
       ? parsed.completedLessonIds.filter((lessonId) => lessonIds.has(lessonId))
@@ -64,8 +69,15 @@ export function writeLocalProgress(progress: StudentProgressDocument) {
     return;
   }
 
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...progress, updatedAt: nowIso() }));
-  syncProgressToFirestore(progress);
+  const studentId = getCurrentStudentId();
+  const scopedProgress = {
+    ...progress,
+    id: progress.id.replaceAll(DEFAULT_STUDENT_ID, studentId),
+    studentId,
+    updatedAt: nowIso()
+  };
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(scopedProgress));
+  syncProgressToFirestore(scopedProgress);
 }
 
 export function completeLesson(lessons: LessonDocument[], progress: StudentProgressDocument, lessonId: string): StudentProgressDocument {
@@ -118,7 +130,7 @@ export function calculateCourseProgress(lessons: LessonDocument[], progress: Stu
   const publishedLessons = lessons.filter((lesson) => lesson.publicationState === "published");
   const totalLessons = publishedLessons.length;
   const completedLessons = publishedLessons.filter((lesson) => progress.completedLessonIds.includes(lesson.id)).length;
-  const coursePercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+  const coursePercent = totalLessons > 0 ? clampPercent(Math.round((completedLessons / totalLessons) * 100)) : 0;
 
   return {
     coursePercent,
@@ -134,7 +146,7 @@ export function calculateModuleProgress(module: ModuleDocument, lessons: LessonD
   const total = moduleLessons.length;
   const completed = moduleLessons.filter((lesson) => progress.completedLessonIds.includes(lesson.id)).length;
 
-  return total > 0 ? Math.round((completed / total) * 100) : 0;
+  return total > 0 ? clampPercent(Math.round((completed / total) * 100)) : 0;
 }
 
 export function readUnlockedCourseIds(): string[] {
@@ -165,4 +177,25 @@ export function isCourseUnlocked(courseId: string) {
 
 function findNextAvailableLessonId(lessons: LessonDocument[], completedLessonIds: string[]) {
   return lessons.find((lesson) => !completedLessonIds.includes(lesson.id))?.id;
+}
+
+function clampPercent(value: number) {
+  return Math.max(0, Math.min(100, value));
+}
+
+function getCurrentStudentId() {
+  if (typeof window === "undefined" || !isFirebaseConfigured()) {
+    return DEFAULT_STUDENT_ID;
+  }
+
+  return getFirebaseAuth().currentUser?.uid ?? DEFAULT_STUDENT_ID;
+}
+
+function getStoredOwnerId(progress: Partial<StudentProgressDocument>) {
+  const candidate = progress as Partial<StudentProgressDocument> & { userId?: unknown };
+  if (typeof candidate.userId === "string") {
+    return candidate.userId;
+  }
+
+  return typeof candidate.studentId === "string" ? candidate.studentId : undefined;
 }

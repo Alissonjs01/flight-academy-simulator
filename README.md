@@ -272,6 +272,18 @@ O cadastro cria o usuario no Firebase Authentication e cria `users/{uid}` no Fir
 
 Ao autenticar, a plataforma detecta chaves locais reconhecidas de progresso, exercicios, revisoes, avaliacoes, checklists e treinamentos. O aluno pode migrar, ignorar ou excluir os dados locais. A migracao reescreve `userId` para o UID autenticado, grava em colecoes privadas e marca `migrationCompleted`.
 
+### Regra de progresso do aluno
+
+O progresso geral exibido no dashboard e no perfil e calculado apenas por conclusoes reais de aulas publicadas:
+
+```text
+progresso geral = aulas publicadas concluidas / total de aulas publicadas * 100
+```
+
+Uma conta nova sempre inicia com `0%`, `0` aulas concluidas, `0` checklists concluidos e nenhum curso iniciado. Abrir o dashboard ou a primeira aula nao marca conteudo como concluido. A primeira aula pode aparecer como aula atual, mas so entra no percentual depois que o aluno aciona a conclusao.
+
+Quando ha Firebase Authentication ativo, o progresso local e associado ao UID da sessao atual e sincronizado para o Firestore. No logout e em troca de conta, a aplicacao limpa dados privados locais reconhecidos para evitar que um usuario visualize progresso do usuario anterior no mesmo navegador.
+
 ### Seed de conteudo
 
 O seed idempotente esta em `scripts/seedFirestore.ts`. Ele carrega cursos, modulos, aulas, exercicios, avaliacoes, Cessna 408 SkyCourier, Garmin G1000 NXi, checklists e treinamentos usando IDs estaveis. Executar novamente atualiza os mesmos documentos sem duplicar.

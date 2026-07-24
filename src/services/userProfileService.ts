@@ -22,16 +22,23 @@ export async function ensureStudentProfile(user: User, displayName?: string) {
   const existing = await getDoc(profileRef);
 
   if (existing.exists()) {
+    const current = normalizeExistingProfile(existing.data() as Partial<StudentProfileDocument>, user, timestamp);
     await updateDoc(profileRef, {
-      email: user.email ?? "",
-      photoURL: user.photoURL ?? null,
+      email: user.email ?? current.email,
+      photoURL: user.photoURL ?? current.photoURL ?? null,
       lastLoginAt: timestamp,
       updatedAt: timestamp,
       updatedAtServer: serverTimestamp(),
       lastLoginAtServer: serverTimestamp()
     });
 
-    return (await getDoc(profileRef)).data() as StudentProfileDocument;
+    return {
+      ...current,
+      email: user.email ?? current.email,
+      photoURL: user.photoURL ?? current.photoURL,
+      lastLoginAt: timestamp,
+      updatedAt: timestamp
+    };
   }
 
   const profile: StudentProfileDocument = {
@@ -55,6 +62,21 @@ export async function ensureStudentProfile(user: User, displayName?: string) {
   });
 
   return profile;
+}
+
+function normalizeExistingProfile(profile: Partial<StudentProfileDocument>, user: User, timestamp: string): StudentProfileDocument {
+  return {
+    uid: profile.uid ?? user.uid,
+    displayName: profile.displayName?.trim() || user.displayName || "Aluno",
+    email: profile.email ?? user.email ?? "",
+    photoURL: profile.photoURL ?? user.photoURL ?? undefined,
+    role: profile.role === "admin" || profile.role === "instructor" || profile.role === "student" ? profile.role : "student",
+    createdAt: profile.createdAt ?? timestamp,
+    updatedAt: profile.updatedAt ?? timestamp,
+    lastLoginAt: profile.lastLoginAt ?? timestamp,
+    migrationCompleted: Boolean(profile.migrationCompleted),
+    onboardingCompleted: Boolean(profile.onboardingCompleted)
+  };
 }
 
 export async function updateStudentProfile(uid: string, updates: Partial<Pick<StudentProfileDocument, "displayName" | "photoURL" | "onboardingCompleted" | "migrationCompleted">>) {

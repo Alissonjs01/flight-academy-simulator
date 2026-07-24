@@ -128,9 +128,11 @@ function PanelTab({ profile }: AircraftDetailProps) {
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <Panel>
         <h2 className="text-xl font-semibold text-white">Painel</h2>
-        <p className="mt-3 text-sm leading-7 text-slate-300">Área preparada para imagens do painel, fluxos de cockpit e referências visuais validadas.</p>
+        <p className="mt-3 text-sm leading-7 text-slate-300">
+          Estude o painel por regiões: instrumentos primários, aviônicos, modos de automação, controles de motor, flaps, trim, iluminação, combustível e alertas. Use imagens somente quando houver mídia validada e autorizada.
+        </p>
         <div className="mt-5">
-          <AircraftImagePanel alt="Painel da aeronave" caption="Imagem do painel pendente." compact />
+          <AircraftImagePanel alt="Painel da aeronave" caption="Sem imagem de painel validada nesta etapa; use o cockpit do simulador como referência visual." compact />
         </div>
       </Panel>
       <Panel>
@@ -297,7 +299,7 @@ function AircraftImagePanel({ src, alt, caption, compact = false }: { src?: stri
     >
       <SafeImage src={src} alt={alt} className="h-full min-h-64 w-full object-cover" fallbackLabel={caption ?? "Imagem pendente"} />
       <div className="w-full border-t border-white/10 bg-aviation-ink/85 p-4">
-        <p className="text-sm font-semibold text-white">{caption ?? "Imagem a ser vinculada quando houver mídia validada."}</p>
+        <p className="text-sm font-semibold text-white">{caption ?? "Mídia não vinculada para evitar uso de imagem sem licença ou fonte validada."}</p>
       </div>
     </div>
   );

@@ -29,6 +29,10 @@ function matchesText(avionic: AvionicDocument, query?: string) {
 }
 
 function matchesFilters(avionic: AvionicDocument, filters?: AvionicFilters) {
+  if (avionic.publicationState !== "published") {
+    return false;
+  }
+
   const manufacturerMatches = !filters?.manufacturer || filters.manufacturer === "Todos" || avionic.manufacturer === filters.manufacturer;
   const statusMatches = !filters?.studyStatus || filters.studyStatus === "Todos" || avionic.studyStatus === filters.studyStatus;
 

@@ -3,7 +3,7 @@ import { applicationDefault, deleteApp, getApps, initializeApp } from "firebase-
 import { getAuth } from "firebase-admin/auth";
 
 const authBaseUrl = "http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1";
-const projectId = "demo-no-project";
+const projectId = process.env.GCLOUD_PROJECT ?? process.env.FIREBASE_PROJECT_ID ?? "flight-academy-simulatorr";
 const apiKey = "fake-api-key";
 const appName = "auth-emulator-validation";
 

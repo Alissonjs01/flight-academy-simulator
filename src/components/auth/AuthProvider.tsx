@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { User } from "firebase/auth";
 import type { StudentProfileDocument, UserRole } from "@/features/auth/types";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
-import { getFirebaseAuthErrorMessage } from "@/lib/firebase/errors";
+import { getFirebaseAuthErrorMessage, getFirebaseDataErrorMessage } from "@/lib/firebase/errors";
 import { observeAuthState } from "@/services/authService";
 import { ensureStudentProfile, updateStudentProfile } from "@/services/userProfileService";
 import {
@@ -21,7 +21,10 @@ type AuthContextValue = {
   profile?: StudentProfileDocument;
   role: UserRole | null;
   isLoading: boolean;
+  isProfileLoading: boolean;
   isConfigured: boolean;
+  authError?: string;
+  profileError?: string;
   error?: string;
 };
 
@@ -29,6 +32,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   role: null,
   isLoading: true,
+  isProfileLoading: false,
   isConfigured: false
 });
 
@@ -37,32 +41,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<StudentProfileDocument | undefined>();
   const [role, setRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>();
+  const [isProfileLoading, setIsProfileLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | undefined>();
+  const [profileError, setProfileError] = useState<string | undefined>();
   const [migrationSummary, setMigrationSummary] = useState<LocalMigrationSummary | undefined>();
+  const activeUidRef = useRef<string | null>(null);
   const isConfigured = isFirebaseConfigured();
 
   useEffect(() => {
     if (!isConfigured) {
       setIsLoading(false);
-      setError("Firebase ainda não está configurado. Preencha as variáveis em .env.local para ativar autenticação e dados remotos.");
+      setAuthError("Firebase ainda não está configurado. Preencha as variáveis em .env.local para ativar autenticação e dados remotos.");
       return;
     }
 
     return observeAuthState(async (nextUser) => {
       setIsLoading(true);
-      setError(undefined);
-      setUser(nextUser);
+      setIsProfileLoading(Boolean(nextUser));
+      setAuthError(undefined);
+      setProfileError(undefined);
 
       try {
         if (!nextUser) {
+          activeUidRef.current = null;
+          clearPrivateLocalData();
+          setUser(null);
           setProfile(undefined);
           setRole(null);
           setMigrationSummary(undefined);
           setIsLoading(false);
+          setIsProfileLoading(false);
           return;
         }
 
-        const ensuredProfile = await ensureStudentProfile(nextUser);
+        const isAccountSwitch = Boolean(activeUidRef.current && activeUidRef.current !== nextUser.uid);
+        if (isAccountSwitch) {
+          clearPrivateLocalData();
+          setMigrationSummary(undefined);
+        }
+
+        activeUidRef.current = nextUser.uid;
+        setUser(nextUser);
+
+        let ensuredProfile: StudentProfileDocument;
+        try {
+          ensuredProfile = await ensureStudentProfile(nextUser);
+        } catch (profileLoadError) {
+          setProfile(undefined);
+          setRole(null);
+          setProfileError(getFirebaseDataErrorMessage(profileLoadError));
+          return;
+        }
+
         const token = await nextUser.getIdTokenResult();
         const claimRole = token.claims.role;
         const resolvedRole = claimRole === "admin" || claimRole === "instructor" || claimRole === "student" ? claimRole : ensuredProfile.role;
@@ -70,26 +100,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setProfile({ ...ensuredProfile, role: resolvedRole });
         setRole(resolvedRole);
 
-        if (ensuredProfile.migrationCompleted) {
-          await hydratePrivateLocalCacheFromFirestore(nextUser.uid);
-          setMigrationSummary(undefined);
-        } else {
-          const summary = detectLocalMigrationSummary();
-          setMigrationSummary(summary.hasLocalData ? summary : undefined);
-          if (!summary.hasLocalData) {
-            await updateStudentProfile(nextUser.uid, { migrationCompleted: true });
-            setProfile((current) => (current ? { ...current, migrationCompleted: true } : current));
+        try {
+          if (ensuredProfile.migrationCompleted) {
+            await hydratePrivateLocalCacheFromFirestore(nextUser.uid);
+            setMigrationSummary(undefined);
+          } else {
+            const summary = detectLocalMigrationSummary();
+            setMigrationSummary(summary.hasLocalData ? summary : undefined);
+            if (!summary.hasLocalData) {
+              await updateStudentProfile(nextUser.uid, { migrationCompleted: true });
+              setProfile((current) => (current ? { ...current, migrationCompleted: true } : current));
+            }
           }
+        } catch (privateDataError) {
+          setProfileError(`${getFirebaseDataErrorMessage(privateDataError)} Seu login foi mantido, mas alguns dados de progresso podem não ter sido carregados.`);
         }
       } catch (authError) {
-        setError(getFirebaseAuthErrorMessage(authError));
+        setAuthError(getFirebaseAuthErrorMessage(authError));
       } finally {
         setIsLoading(false);
+        setIsProfileLoading(false);
       }
     });
   }, [isConfigured]);
 
-  const value = useMemo<AuthContextValue>(() => ({ user, profile, role, isLoading, isConfigured, error }), [error, isConfigured, isLoading, profile, role, user]);
+  const value = useMemo<AuthContextValue>(
+    () => ({ user, profile, role, isLoading, isProfileLoading, isConfigured, authError, profileError, error: authError }),
+    [authError, isConfigured, isLoading, isProfileLoading, profile, profileError, role, user]
+  );
 
   return (
     <AuthContext.Provider value={value}>

@@ -31,6 +31,10 @@ async function listByAircraft<T extends { id: string; aircraftId: string; order:
 }
 
 function matchesFilters(aircraft: AircraftDocument, filters?: AircraftFilters) {
+  if (aircraft.publicationState !== "published") {
+    return false;
+  }
+
   const normalizedQuery = filters?.query?.trim().toLocaleLowerCase("pt-BR") ?? "";
   const haystack = [aircraft.manufacturer, aircraft.model, aircraft.fullName, aircraft.category, aircraft.description].join(" ").toLocaleLowerCase("pt-BR");
 

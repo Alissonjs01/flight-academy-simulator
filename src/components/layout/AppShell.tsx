@@ -3,16 +3,19 @@
 import { LogOut, Menu, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { navigationItems } from "@/data/mockAcademy";
+import { localLessonDocuments } from "@/features/content/data/localContent";
 import { MobileNavigation } from "@/components/layout/MobileNavigation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { AuthGate } from "@/components/auth/AuthGate";
 import { AuthProvider, useAuth } from "@/components/auth/AuthProvider";
 import { ConnectivityStatus } from "@/components/pwa/ConnectivityStatus";
 import { PwaProvider } from "@/components/pwa/PwaProvider";
+import { UserProfileModal } from "@/components/profile/UserProfileModal";
 import { UserAvatar } from "@/components/ui/SafeImage";
 import { logout } from "@/services/authService";
+import { createEmptyUserProfileStats, readUserProfileStats, type UserProfileStats } from "@/services/userProfileStatsService";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -118,23 +121,46 @@ function AppFrame({ children }: Readonly<{ children: ReactNode }>) {
 
 function UserMenu() {
   const { user, profile } = useAuth();
+  const [isProfileOpen, setProfileOpen] = useState(false);
+  const totalPublishedLessons = useMemo(() => localLessonDocuments.filter((lesson) => lesson.publicationState === "published").length, []);
+  const [stats, setStats] = useState<UserProfileStats>(() => createEmptyUserProfileStats(totalPublishedLessons));
   const displayName = profile?.displayName ?? user?.displayName ?? "Aluno";
+
+  useEffect(() => {
+    if (!user) {
+      setProfileOpen(false);
+      setStats(createEmptyUserProfileStats(totalPublishedLessons));
+      return;
+    }
+
+    setStats(readUserProfileStats(user.uid, totalPublishedLessons));
+  }, [totalPublishedLessons, user]);
 
   if (!user) {
     return null;
   }
 
   return (
-    <div className="hidden items-center gap-3 md:flex">
-      <div className="text-right">
-        <p className="text-sm font-semibold text-white">{displayName}</p>
-        <p className="text-xs text-slate-500">{profile?.role ?? "student"}</p>
-      </div>
-      <UserAvatar
-        src={profile?.photoURL ?? user.photoURL}
-        name={displayName}
-        className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-white/5 object-cover text-sm font-semibold text-aviation-cyan"
-      />
+    <div className="flex items-center gap-2 md:gap-3">
+      <button
+        type="button"
+        onClick={() => {
+          setStats(readUserProfileStats(user.uid, totalPublishedLessons));
+          setProfileOpen(true);
+        }}
+        className="focus-ring inline-flex items-center gap-3 rounded-md border border-white/10 bg-white/5 p-1.5 text-left transition hover:border-aviation-cyan/40 md:pl-3"
+        aria-label="Abrir perfil do aluno"
+      >
+        <div className="hidden text-right md:block">
+          <p className="text-sm font-semibold text-white">{displayName}</p>
+          <p className="text-xs text-slate-500">{profile?.role ?? "student"}</p>
+        </div>
+        <UserAvatar
+          src={profile?.photoURL ?? user.photoURL}
+          name={displayName}
+          className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-white/5 object-cover text-sm font-semibold text-aviation-cyan md:h-10 md:w-10"
+        />
+      </button>
       <button
         type="button"
         onClick={() => void logout()}
@@ -143,6 +169,7 @@ function UserMenu() {
       >
         <LogOut className="h-4 w-4" />
       </button>
+      <UserProfileModal isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} user={user} profile={profile} stats={stats} />
     </div>
   );
 }

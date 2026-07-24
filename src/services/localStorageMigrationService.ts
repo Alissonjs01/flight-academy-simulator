@@ -176,6 +176,11 @@ function readProgress() {
     return undefined;
   }
 
+  const hasRecognizedProgress = value.completedLessonIds.some(isString) || isString(value.currentLessonId) || isString(value.lastLessonId);
+  if (!hasRecognizedProgress) {
+    return undefined;
+  }
+
   return {
     id: value.id ?? `progress-${localStudentId}`,
     studentId: value.studentId ?? localStudentId,

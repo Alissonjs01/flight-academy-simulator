@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { MetricCard } from "@/components/cards/MetricCard";
 import { QuickLinkCard } from "@/components/cards/QuickLinkCard";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -25,8 +26,10 @@ type DashboardContentProps = {
 };
 
 export function DashboardContent({ studentName, structure, aircraft }: DashboardContentProps) {
+  const { user, profile } = useAuth();
   const orderedLessons = useMemo(() => structure.modules.flatMap((module) => module.lessons), [structure.modules]);
   const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(orderedLessons));
+  const displayName = profile?.displayName ?? user?.displayName ?? studentName;
 
   useEffect(() => {
     setProgress(readLocalProgress(orderedLessons));
@@ -44,7 +47,7 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
         <Panel className="overflow-hidden">
           <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center">
             <div className="min-w-0">
-              <p className="text-sm font-medium text-aviation-cyan">Bem-vindo de volta, {studentName}</p>
+              <p className="text-sm font-medium text-aviation-cyan">Bem-vindo de volta, {displayName}</p>
               <h2 className="mt-3 max-w-3xl text-2xl font-semibold text-white sm:text-3xl">Continue seu treinamento no ponto exato em que parou.</h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-400">
                 A trilha atual começa com fundamentos de pilotagem e prepara a transição para Garmin G1000 NXi, navegação e IFR.
