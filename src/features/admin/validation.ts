@@ -1,4 +1,5 @@
 import type { AdminContentPayload, AdminEntityConfig } from "@/features/admin/types";
+import { getImageValidationMessage } from "@/lib/images";
 
 export type AdminValidationIssue = {
   field: string;
@@ -47,6 +48,7 @@ export function validateAdminPayload(config: AdminEntityConfig, payload: AdminCo
   }
 
   validateTechnicalSource(payload, issues);
+  validateImageReferences(payload, issues);
 
   if (config.type === "aircraftLimitation") {
     validateAircraftLimitation(payload, issues);
@@ -65,6 +67,25 @@ export function validateAdminPayload(config: AdminEntityConfig, payload: AdminCo
   }
 
   return issues;
+}
+
+function validateImageReferences(payload: AdminContentPayload, issues: AdminValidationIssue[]) {
+  const candidates: Array<[string, unknown]> = [
+    ["imageUrl", payload.imageUrl],
+    ["mainImage.url", readNested(payload.mainImage, "url")],
+    ["image.url", readNested(payload.image, "url")]
+  ];
+
+  for (const [field, value] of candidates) {
+    const message = getImageValidationMessage(value);
+    if (message) {
+      issues.push({ field, message });
+    }
+  }
+}
+
+function readNested(value: unknown, key: string) {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>)[key] : undefined;
 }
 
 export function slugifyTitle(value: string) {

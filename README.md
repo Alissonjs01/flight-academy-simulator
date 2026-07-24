@@ -22,15 +22,54 @@ npm run dev
 http://localhost:3000
 ```
 
+## Preparar no Netlify pelo GitHub
+
+Esta aplicacao Next.js esta preparada para deploy no Netlify pelo repositorio GitHub. O arquivo `netlify.toml` define:
+
+- comando de build: `npm run build`;
+- pasta publicada: `.next`;
+- Node.js 20;
+- emuladores desativados;
+- Storage desativado;
+- conteudo publico inicial vindo dos dados locais.
+
+A Netlify suporta Next.js com App Router usando o adaptador automatico atual. Nao foi instalado plugin manual nem fixada versao do adaptador.
+
+No painel do Netlify, conecte o repositorio `Alissonjs01/flight-academy-simulator.git` e configure estas variaveis em **Site configuration > Environment variables**:
+
+```bash
+NEXT_PUBLIC_FIREBASE_API_KEY=valor_do_app_web_firebase
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=flight-academy-simulatorr.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=flight-academy-simulatorr
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=valor_do_app_web_firebase
+NEXT_PUBLIC_FIREBASE_APP_ID=valor_do_app_web_firebase
+NEXT_PUBLIC_USE_FIREBASE_EMULATORS=false
+NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE=local
+NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE=false
+NEXT_PUBLIC_ENABLE_PWA_IN_DEV=false
+```
+
+`NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` e opcional nesta fase, porque Firebase Storage permanece desativado. Nao coloque conta de servico, chave privada, arquivo JSON administrativo ou segredo do Firebase Admin SDK no Netlify para este fluxo.
+
+Antes de publicar, confirme no Firebase Console:
+
+- Authentication com provedor E-mail/senha habilitado;
+- Cloud Firestore criado;
+- `firestore.rules` e `firestore.indexes.json` publicados pelo comando local `npm run deploy:firestore`;
+- Storage nao ativado nesta etapa;
+- plano Blaze nao habilitado para este projeto.
+
 ## Estado atual
 
 Esta versao esta pronta para testes locais, Firebase Emulator Suite e conexao inicial ao projeto Firebase real do proprietario. O repositorio remoto GitHub tambem ja pode ser usado quando configurado localmente.
 
-Modo sem custos atual:
+Modo Spark atual:
 
-- Firebase Authentication: pode ser usado no plano gratis.
-- Cloud Firestore: pode ser usado no plano gratis, respeitando cotas do Firebase.
-- Firebase Storage: permanece preparado no codigo, mas desativado por padrao porque pode exigir upgrade de plano.
+- Projeto configurado para funcionar no plano Spark utilizando apenas Authentication e Cloud Firestore, respeitando as cotas gratuitas do Firebase.
+- Firebase Authentication possui cotas gratuitas e deve ser monitorado no Console.
+- Cloud Firestore possui cotas gratuitas de leitura, escrita, exclusão e armazenamento.
+- Firebase Storage permanece preparado no codigo, mas totalmente desativado nesta fase.
+- O projeto nao deve ser migrado para Blaze nesta etapa.
 - Firebase Hosting/App Hosting: nao foi implantado nesta etapa.
 - Seeds em projeto real: devem ser executados somente com confirmacao explicita.
 
@@ -38,7 +77,7 @@ Funcionalidades reais no codigo:
 
 - Firebase Authentication implementado para cadastro, login, logout e recuperacao de senha.
 - Firestore implementado para perfis, progresso, tentativas, revisoes e conteudo quando configurado.
-- Storage preparado para imagens permitidas, mas desligado por padrao no modo sem custos.
+- Storage preparado para imagens permitidas, mas desligado por padrao no modo Spark atual.
 - Security Rules e testes automatizados.
 - Painel administrativo protegido por papeis.
 - PWA com manifest, service worker, tela offline e configuracoes.
@@ -167,20 +206,20 @@ users/{userId}/reviewItems/{reviewItemId}
 
 Para migrar, crie uma implementacao Firebase das interfaces em `src/features/content/repositories/contentRepository.ts` e substitua o repositorio usado pelos servicos em `src/services`. O progresso, tentativas, respostas e revisoes locais de `localStorage` devem virar documentos por usuario, protegidos por Firebase Authentication e Firebase Security Rules.
 
-O Firebase Storage deve ser usado futuramente para imagens de cursos, anexos de aulas, PDFs, videos e materiais de checklist, mas ele fica desativado no modo sem custos atual.
+O Firebase Storage pode ser usado futuramente para imagens de cursos, anexos de aulas, PDFs, videos e materiais de checklist, mas ele fica desativado no modo Spark atual.
 
 Veja tambem `docs/firebase-migration.md`.
 
 ## Firebase
 
-Esta etapa prepara e integra Firebase Authentication, Cloud Firestore, Security Rules e Emulator Suite. Firebase Storage esta preparado no codigo e nas regras, mas desativado por padrao para manter a plataforma no modo sem custos. A configuracao publica do SDK web fica em `.env.local`; credenciais privadas, contas de servico e JSONs administrativos nao devem ser versionados.
+Esta etapa prepara e integra Firebase Authentication, Cloud Firestore, Security Rules e Emulator Suite. Firebase Storage esta preparado no codigo e nas regras, mas desativado por padrao para manter a plataforma usando apenas Auth + Firestore no plano Spark. A configuracao publica do SDK web fica em `.env.local`; credenciais privadas, contas de servico e JSONs administrativos nao devem ser versionados.
 
 ### Criar o projeto Firebase
 
 1. No Console do Firebase, crie um projeto.
 2. Ative Authentication com provedor E-mail/senha.
 3. Crie o banco Cloud Firestore.
-4. Nao ative Firebase Storage se quiser permanecer sem custos.
+4. Nao ative Firebase Storage nem migre para Blaze nesta etapa.
 5. Registre um app Web e copie as configuracoes publicas do SDK.
 6. Crie `.env.local` com base em `.env.example`.
 
@@ -217,7 +256,7 @@ npm run typecheck
 npm run build
 ```
 
-Para usar emuladores na aplicacao local, defina `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` em `.env.local` e rode `npm run emulators` em paralelo ao `npm run dev`, ou use `npm run dev:emulators`.
+Para usar emuladores na aplicacao local, defina `NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true` em `.env.local` e rode `npm run emulators` em paralelo ao `npm run dev`, ou use `npm run dev:emulators`. Esses comandos padrao iniciam somente Authentication e Firestore.
 
 ### Login
 
@@ -265,6 +304,8 @@ Para aplicar Firestore em um projeto real sem ativar Storage:
 ```bash
 firebase deploy --only firestore:rules,firestore:indexes
 ```
+
+Nao execute `firebase deploy` sem `--only`: o deploy generico pode tentar publicar Hosting, Storage, Functions ou outros servicos que nao fazem parte do modo Spark atual.
 
 Quando e somente quando Storage estiver ativo no seu Firebase, publique tambem:
 
@@ -349,7 +390,7 @@ npm run typecheck
 npm run build
 ```
 
-Os testes cobrem bloqueio de alunos no conteudo administrativo, permissao de instrutor, poderes de admin, bloqueio de `verified` para instrutor, campos imutaveis, auditoria, dados privados e regras de Storage.
+Os testes padrao cobrem bloqueio de alunos no conteudo administrativo, permissao de instrutor, poderes de admin, bloqueio de `verified` para instrutor, campos imutaveis, auditoria e dados privados no Firestore. Regras de Storage ficam separadas em `npm run test:storage:rules` e nao sao executadas no fluxo padrao.
 
 ### Limitacoes atuais
 

@@ -20,6 +20,7 @@ import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "
 import { useAuth } from "@/components/auth/AuthProvider";
 import { DeletionImpactPanel, hasSpecializedTechnicalEditor, RevisionComparator, SpecializedTechnicalEditor } from "@/components/admin/SpecializedTechnicalEditors";
 import { Panel } from "@/components/ui/Panel";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/StateMessage";
 import { adminEntityConfigs, adminEntityOrder } from "@/features/admin/entityConfig";
 import type { AdminAuditLogDocument, AdminContentPayload, AdminContentSummary, AdminDashboardMetrics, AdminEntityType, AdminListFilters } from "@/features/admin/types";
@@ -27,6 +28,7 @@ import { slugifyTitle } from "@/features/admin/validation";
 import { classificationLabels, verificationStatusLabels } from "@/features/technical/defaults";
 import type { ContentClassification, SourceType, VerificationStatus } from "@/features/technical/types";
 import { isFirebaseStorageEnabled } from "@/lib/firebase/config";
+import { getImageValidationMessage, resolveSafeImageSource } from "@/lib/images";
 import {
   archiveAdminContent,
   completeAdminUpload,
@@ -424,6 +426,25 @@ function AdminForm({
     setPayload((current) => ({ ...current, [field]: value }));
   }
 
+  function setManualImageReference(field: "imageUrl" | "imageAlt", value: string) {
+    setIsDirty(true);
+    setPayload((current) => {
+      const next = { ...current, [field]: value };
+      const imageUrl = field === "imageUrl" ? value : String(current.imageUrl ?? "");
+      const imageAlt = field === "imageAlt" ? value : String(current.imageAlt ?? "Imagem do conteúdo");
+
+      if (entityType === "aircraft" && typeof current.mainImage === "object" && current.mainImage) {
+        next.mainImage = { ...(current.mainImage as Record<string, unknown>), url: imageUrl, alt: imageAlt };
+      }
+
+      if (entityType === "avionic" && typeof current.image === "object" && current.image) {
+        next.image = { ...(current.image as Record<string, unknown>), url: imageUrl, alt: imageAlt };
+      }
+
+      return next;
+    });
+  }
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsDirty(false);
@@ -447,7 +468,7 @@ function AdminForm({
     try {
       setUploadError(undefined);
       const alt = window.prompt("Texto alternativo da imagem")?.trim() || "Imagem do conteúdo";
-      const task = uploadAdminImage(entityType, String(payload.id), file, alt, setUploadProgress);
+      const { task } = await uploadAdminImage(entityType, String(payload.id), file, alt, setUploadProgress);
       const result = await completeAdminUpload(entityType, String(payload.id), task, alt);
       setField("imageUrl", result.url);
       setField("imageStoragePath", result.storagePath);
@@ -492,25 +513,16 @@ function AdminForm({
                 <RevisionComparator previous={initialPayload} current={payload} />
                 <DeletionImpactPanel entityType={entityType} payload={payload} />
                 {config.uploadFolder ? (
-                  <Panel>
-                    <p className="text-sm font-semibold text-white">Imagem</p>
-                    {storageEnabled ? (
-                      <>
-                        <p className="mt-1 text-xs leading-5 text-slate-400">JPG, PNG ou WebP. O arquivo será enviado para uma pasta de Storage vinculada a este conteúdo.</p>
-                        <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-white/15 bg-white/[0.035] px-4 py-5 text-sm font-semibold text-slate-200">
-                          <Upload className="h-4 w-4 text-aviation-cyan" />
-                          Enviar imagem
-                          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void handleUpload(event)} className="sr-only" />
-                        </label>
-                      </>
-                    ) : (
-                      <div className="mt-3 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.06] p-3 text-xs leading-5 text-aviation-amber">
-                        Uploads estão desativados no modo sem custos. Salve o conteúdo sem imagem por enquanto; quando o Storage for ativado, basta definir `NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE=true`.
-                      </div>
-                    )}
-                    {uploadProgress !== undefined ? <p className="mt-3 text-sm text-aviation-cyan">Upload: {uploadProgress}%</p> : null}
-                    {uploadError ? <p className="mt-3 text-sm text-aviation-amber">{uploadError}</p> : null}
-                  </Panel>
+                  <ImageReferencePanel
+                    storageEnabled={storageEnabled}
+                    imageUrl={getPayloadImageUrl(payload)}
+                    imageAlt={getPayloadImageAlt(payload)}
+                    uploadProgress={uploadProgress}
+                    uploadError={uploadError}
+                    onImageUrlChange={(value) => setManualImageReference("imageUrl", value)}
+                    onImageAltChange={(value) => setManualImageReference("imageAlt", value)}
+                    onUpload={handleUpload}
+                  />
                 ) : null}
               </div>
             </div>
@@ -518,6 +530,77 @@ function AdminForm({
         </Panel>
       </div>
     </div>
+  );
+}
+
+function getPayloadImageUrl(payload: AdminContentPayload) {
+  return String(payload.imageUrl ?? readRecordField(payload.mainImage, "url") ?? readRecordField(payload.image, "url") ?? "");
+}
+
+function getPayloadImageAlt(payload: AdminContentPayload) {
+  return String(payload.imageAlt ?? readRecordField(payload.mainImage, "alt") ?? readRecordField(payload.image, "alt") ?? "");
+}
+
+function readRecordField(value: unknown, field: string) {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>)[field] : undefined;
+}
+
+function ImageReferencePanel({
+  storageEnabled,
+  imageUrl,
+  imageAlt,
+  uploadProgress,
+  uploadError,
+  onImageUrlChange,
+  onImageAltChange,
+  onUpload
+}: {
+  storageEnabled: boolean;
+  imageUrl: string;
+  imageAlt: string;
+  uploadProgress?: number;
+  uploadError?: string;
+  onImageUrlChange: (value: string) => void;
+  onImageAltChange: (value: string) => void;
+  onUpload: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const validationMessage = getImageValidationMessage(imageUrl);
+  const previewSource = resolveSafeImageSource(imageUrl);
+
+  return (
+    <Panel>
+      <p className="text-sm font-semibold text-white">Imagem</p>
+      <p className="mt-1 text-xs leading-5 text-slate-400">O Firebase Storage ainda não está configurado. Utilize uma URL HTTPS ou uma imagem existente na pasta public.</p>
+
+      <div className="mt-4 overflow-hidden rounded-md border border-white/10 bg-white/[0.035]">
+        <SafeImage src={previewSource} alt={imageAlt || "Pré-visualização da imagem"} className="h-36 w-full object-cover" fallbackLabel="Imagem local placeholder" />
+      </div>
+
+      <div className="mt-4 space-y-3">
+        <TextField label="URL HTTPS ou caminho local (/images/...)" value={imageUrl} onChange={onImageUrlChange} />
+        <TextField label="Texto alternativo" value={imageAlt} onChange={onImageAltChange} />
+      </div>
+
+      {validationMessage ? <p className="mt-3 text-xs leading-5 text-aviation-amber">{validationMessage}</p> : null}
+
+      {storageEnabled ? (
+        <>
+          <p className="mt-4 text-xs leading-5 text-slate-400">JPG, PNG ou WebP. O arquivo será enviado para uma pasta de Storage vinculada a este conteúdo.</p>
+          <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-white/15 bg-white/[0.035] px-4 py-5 text-sm font-semibold text-slate-200">
+            <Upload className="h-4 w-4 text-aviation-cyan" />
+            Enviar imagem
+            <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void onUpload(event)} className="sr-only" />
+          </label>
+        </>
+      ) : (
+        <div className="mt-4 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.06] p-3 text-xs leading-5 text-aviation-amber">
+          Upload desativado no modo Spark atual. Salve o conteúdo com uma URL HTTPS ou um caminho local em `/images/...`.
+        </div>
+      )}
+
+      {uploadProgress !== undefined ? <p className="mt-3 text-sm text-aviation-cyan">Upload: {uploadProgress}%</p> : null}
+      {uploadError ? <p className="mt-3 text-sm text-aviation-amber">{uploadError}</p> : null}
+    </Panel>
   );
 }
 

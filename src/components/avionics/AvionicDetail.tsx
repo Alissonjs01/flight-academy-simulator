@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { BookOpen, Gauge, ImageIcon, ListChecks, Plane, Target } from "lucide-react";
+import { BookOpen, Gauge, ListChecks, Plane, Target } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useState } from "react";
@@ -9,6 +9,7 @@ import type { AvionicProfile, AvionicSectionDocument } from "@/features/avionics
 import { avionicStudyStatusLabels } from "@/features/avionics/statusLabels";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 type AvionicDetailProps = {
@@ -55,7 +56,7 @@ export function AvionicDetail({ profile }: AvionicDetailProps) {
               <Spec label="Publicação" value={avionic.publicationState === "published" ? "Publicado" : "Rascunho"} />
             </div>
           </div>
-          <MediaPanel alt={avionic.image.alt} caption={avionic.image.caption} />
+          <MediaPanel src={avionic.image.url} alt={avionic.image.alt} caption={avionic.image.caption} />
         </div>
       </Panel>
 
@@ -126,7 +127,7 @@ function SectionTab({ section }: { section: AvionicSectionDocument }) {
           <TechnicalMetadataSummary metadata={section.technicalMetadata} />
         </div>
         <div className="mt-5">
-          <MediaPanel alt={section.image?.alt ?? section.title} caption={section.image?.caption} compact />
+          <MediaPanel src={section.image?.url} alt={section.image?.alt ?? section.title} caption={section.image?.caption} compact />
         </div>
       </Panel>
       <Panel>
@@ -234,18 +235,18 @@ function CoursesTab({ profile }: AvionicDetailProps) {
   );
 }
 
-function MediaPanel({ alt, caption, compact = false }: { alt: string; caption?: string; compact?: boolean }) {
+function MediaPanel({ src, alt, caption, compact = false }: { src?: string; alt: string; caption?: string; compact?: boolean }) {
   return (
     <div
       className={clsx(
-        "flex flex-col items-center justify-center border-white/10 bg-gradient-to-br from-slate-950 via-aviation-ink to-slate-800 p-6 text-center",
+        "flex flex-col items-center justify-center overflow-hidden border-white/10 bg-gradient-to-br from-slate-950 via-aviation-ink to-slate-800 text-center",
         compact ? "min-h-60 rounded-md border" : "min-h-full border-l"
       )}
-      aria-label={alt}
     >
-      <ImageIcon className="h-14 w-14 text-aviation-cyan" />
-      <p className="mt-4 text-sm font-semibold text-white">Diagrama pendente</p>
-      <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">{caption ?? "Mídia futura vinculada pelo Firebase Storage."}</p>
+      <SafeImage src={src} alt={alt} className="h-full min-h-60 w-full object-cover" fallbackLabel={caption ?? "Diagrama pendente"} />
+      <div className="w-full border-t border-white/10 bg-aviation-ink/85 p-4">
+        <p className="text-sm font-semibold text-white">{caption ?? "Mídia futura vinculada por URL HTTPS ou /images."}</p>
+      </div>
     </div>
   );
 }

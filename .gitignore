@@ -31,6 +31,7 @@ private-key*
 
 # Firebase local/private files
 .firebase/
+.netlify/
 firebase-debug.log
 firestore-debug.log
 ui-debug.log

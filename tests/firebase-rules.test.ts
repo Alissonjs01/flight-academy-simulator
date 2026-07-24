@@ -3,7 +3,6 @@ import { resolve } from "node:path";
 import { initializeTestEnvironment, assertFails, assertSucceeds, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { getBytes, ref, uploadBytes } from "firebase/storage";
 
 let testEnv: RulesTestEnvironment;
 
@@ -14,16 +13,12 @@ beforeAll(async () => {
     projectId,
     firestore: {
       rules: readFileSync(resolve("firestore.rules"), "utf8")
-    },
-    storage: {
-      rules: readFileSync(resolve("storage.rules"), "utf8")
     }
   });
 });
 
 afterEach(async () => {
   await testEnv.clearFirestore();
-  await testEnv.clearStorage();
 });
 
 afterAll(async () => {
@@ -291,47 +286,6 @@ describe("Firestore Security Rules", () => {
   });
 });
 
-describe("Storage Security Rules", () => {
-  it("bloqueia upload não autenticado", async () => {
-    const storage = testEnv.unauthenticatedContext().storage();
-    await assertFails(uploadBytes(ref(storage, "profilePhotos/student-a/avatar.png"), imageBlob("image/png")));
-  });
-
-  it("bloqueia aluno enviando imagem administrativa", async () => {
-    const storage = testEnv.authenticatedContext("student-a", { role: "student" }).storage();
-    await assertFails(uploadBytes(ref(storage, "courseImages/course-a/main.png"), imageBlob("image/png")));
-  });
-
-  it("permite administrador enviar imagem de curso válida", async () => {
-    const storage = testEnv.authenticatedContext("admin-a", { role: "admin" }).storage();
-    await assertSucceeds(uploadBytes(ref(storage, "courseImages/course-a/main.png"), imageBlob("image/png")));
-  });
-
-  it("permite instrutor enviar imagem de aula válida", async () => {
-    const storage = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).storage();
-    await assertSucceeds(uploadBytes(ref(storage, "lessonImages/lesson-a/main.webp"), imageBlob("image/webp")));
-  });
-
-  it("bloqueia upload com tipo inválido", async () => {
-    const storage = testEnv.authenticatedContext("admin-a", { role: "admin" }).storage();
-    await assertFails(uploadBytes(ref(storage, "courseImages/course-a/main.txt"), imageBlob("text/plain")));
-  });
-
-  it("bloqueia upload acima do limite", async () => {
-    const storage = testEnv.authenticatedContext("admin-a", { role: "admin" }).storage();
-    const oversized = new Blob([new Uint8Array(6 * 1024 * 1024)], { type: "image/png" });
-    await assertFails(uploadBytes(ref(storage, "courseImages/course-a/large.png"), oversized));
-  });
-
-  it("bloqueia leitura de foto privada de outro usuário", async () => {
-    await testEnv.withSecurityRulesDisabled(async (context) => {
-      await uploadBytes(ref(context.storage(), "profilePhotos/student-b/avatar.png"), imageBlob("image/png"));
-    });
-    const storage = testEnv.authenticatedContext("student-a", { role: "student" }).storage();
-    await assertFails(getBytes(ref(storage, "profilePhotos/student-b/avatar.png")));
-  });
-});
-
 async function seedCourse(id: string, publicationState: "published" | "draft") {
   await testEnv.withSecurityRulesDisabled(async (context) => {
     await setDoc(doc(context.firestore(), "courses", id), { ...publishedCourse(id), publicationState });
@@ -498,8 +452,4 @@ function userProfile(uid: string, role: "student" | "instructor" | "admin") {
     migrationCompleted: false,
     onboardingCompleted: false
   };
-}
-
-function imageBlob(contentType: string) {
-  return new Blob([new Uint8Array([1, 2, 3])], { type: contentType });
 }

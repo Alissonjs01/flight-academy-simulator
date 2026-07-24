@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">Imagem indisponivel</title>
+  <desc id="desc">Placeholder local da Flight Academy Simulator.</desc>
+  <rect width="1200" height="800" fill="#07111f"/>
+  <rect x="48" y="48" width="1104" height="704" rx="28" fill="#0f1b2d" stroke="#2dd4ff" stroke-opacity=".34" stroke-width="4"/>
+  <path d="M310 482h580L732 318l-93 96-68-72-261 140Z" fill="#1e344f"/>
+  <circle cx="428" cy="286" r="58" fill="#2dd4ff" fill-opacity=".35"/>
+  <text x="600" y="594" text-anchor="middle" fill="#d7e7f7" font-family="Arial, sans-serif" font-size="42" font-weight="700">Imagem pendente</text>
+  <text x="600" y="650" text-anchor="middle" fill="#91a4b7" font-family="Arial, sans-serif" font-size="25">Use uma URL HTTPS ou arquivo em /public/images</text>
+</svg>

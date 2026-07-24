@@ -9,6 +9,7 @@ import type { AircraftProfile } from "@/features/aircraft/types";
 import { aircraftStudyStatusLabels } from "@/features/aircraft/statusLabels";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SafeImage } from "@/components/ui/SafeImage";
 import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 type AircraftDetailProps = {
@@ -59,7 +60,7 @@ export function AircraftDetail({ profile }: AircraftDetailProps) {
               <Spec label="Motores" value={aircraft.numberOfEngines === null ? "Dados provisórios" : `${aircraft.numberOfEngines} ${aircraft.engineType}`} />
             </div>
           </div>
-          <AircraftImagePanel alt={aircraft.mainImage.alt} caption={aircraft.mainImage.caption} />
+          <AircraftImagePanel src={aircraft.mainImage.url} alt={aircraft.mainImage.alt} caption={aircraft.mainImage.caption} />
         </div>
       </Panel>
 
@@ -286,18 +287,18 @@ function CoursesTab({ profile }: AircraftDetailProps) {
   );
 }
 
-function AircraftImagePanel({ alt, caption, compact = false }: { alt: string; caption?: string; compact?: boolean }) {
+function AircraftImagePanel({ src, alt, caption, compact = false }: { src?: string; alt: string; caption?: string; compact?: boolean }) {
   return (
     <div
       className={clsx(
-        "flex flex-col items-center justify-center border-white/10 bg-gradient-to-br from-slate-950 via-aviation-ink to-slate-800 p-6 text-center",
+        "flex flex-col items-center justify-center overflow-hidden border-white/10 bg-gradient-to-br from-slate-950 via-aviation-ink to-slate-800 text-center",
         compact ? "min-h-64 rounded-md border" : "min-h-full border-l"
       )}
-      aria-label={alt}
     >
-      <Plane className="h-14 w-14 text-aviation-cyan" />
-      <p className="mt-4 text-sm font-semibold text-white">Imagem pendente</p>
-      <p className="mt-2 max-w-sm text-sm leading-6 text-slate-400">{caption ?? "Imagem a ser vinculada quando houver mídia validada."}</p>
+      <SafeImage src={src} alt={alt} className="h-full min-h-64 w-full object-cover" fallbackLabel={caption ?? "Imagem pendente"} />
+      <div className="w-full border-t border-white/10 bg-aviation-ink/85 p-4">
+        <p className="text-sm font-semibold text-white">{caption ?? "Imagem a ser vinculada quando houver mídia validada."}</p>
+      </div>
     </div>
   );
 }

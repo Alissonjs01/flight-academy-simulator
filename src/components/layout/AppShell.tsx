@@ -11,6 +11,7 @@ import { AuthGate } from "@/components/auth/AuthGate";
 import { AuthProvider, useAuth } from "@/components/auth/AuthProvider";
 import { ConnectivityStatus } from "@/components/pwa/ConnectivityStatus";
 import { PwaProvider } from "@/components/pwa/PwaProvider";
+import { UserAvatar } from "@/components/ui/SafeImage";
 import { logout } from "@/services/authService";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
@@ -117,6 +118,7 @@ function AppFrame({ children }: Readonly<{ children: ReactNode }>) {
 
 function UserMenu() {
   const { user, profile } = useAuth();
+  const displayName = profile?.displayName ?? user?.displayName ?? "Aluno";
 
   if (!user) {
     return null;
@@ -125,9 +127,14 @@ function UserMenu() {
   return (
     <div className="hidden items-center gap-3 md:flex">
       <div className="text-right">
-        <p className="text-sm font-semibold text-white">{profile?.displayName ?? user.displayName ?? "Aluno"}</p>
+        <p className="text-sm font-semibold text-white">{displayName}</p>
         <p className="text-xs text-slate-500">{profile?.role ?? "student"}</p>
       </div>
+      <UserAvatar
+        src={profile?.photoURL ?? user.photoURL}
+        name={displayName}
+        className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-white/5 object-cover text-sm font-semibold text-aviation-cyan"
+      />
       <button
         type="button"
         onClick={() => void logout()}

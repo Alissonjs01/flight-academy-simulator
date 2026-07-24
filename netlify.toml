@@ -1,0 +1,21 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_PUBLIC_USE_FIREBASE_EMULATORS = "false"
+  NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE = "local"
+  NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE = "false"
+  NEXT_PUBLIC_ENABLE_PWA_IN_DEV = "false"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json"

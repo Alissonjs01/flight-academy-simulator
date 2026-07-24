@@ -1,5 +1,8 @@
 rules_version = '2';
 
+// Preparacao futura: Firebase Storage esta desativado no modo Spark atual.
+// Nao publique estas regras nem execute estes testes no fluxo padrao enquanto
+// NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE=false.
 service firebase.storage {
   match /b/{bucket}/o {
     function signedIn() {

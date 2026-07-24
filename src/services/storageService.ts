@@ -1,4 +1,3 @@
-import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseStorage } from "@/lib/firebase/client";
 import { isFirebaseStorageEnabled } from "@/lib/firebase/config";
 
@@ -9,14 +8,19 @@ export async function uploadProfilePhoto(uid: string, file: File) {
   assertStorageEnabled();
   validateImageFile(file, maxProfilePhotoBytes);
   const extension = getSafeImageExtension(file.type);
-  const objectRef = ref(getFirebaseStorage(), `profilePhotos/${uid}/avatar.${extension}`);
+  const [{ getDownloadURL, ref, uploadBytes }, storage] = await Promise.all([import("firebase/storage"), getFirebaseStorage()]);
+  const objectRef = ref(storage, `profilePhotos/${uid}/avatar.${extension}`);
   await uploadBytes(objectRef, file, { contentType: file.type, customMetadata: { ownerUid: uid } });
   return getDownloadURL(objectRef);
 }
 
 export async function deleteProfilePhoto(uid: string) {
-  assertStorageEnabled();
-  await deleteObject(ref(getFirebaseStorage(), `profilePhotos/${uid}/avatar.jpg`));
+  if (!isFirebaseStorageEnabled()) {
+    return;
+  }
+
+  const [{ deleteObject, ref }, storage] = await Promise.all([import("firebase/storage"), getFirebaseStorage()]);
+  await deleteObject(ref(storage, `profilePhotos/${uid}/avatar.jpg`));
 }
 
 export function getCourseImagePath(courseSlug: string, fileName: string) {
@@ -43,7 +47,7 @@ function validateImageFile(file: File, maxBytes: number) {
 
 function assertStorageEnabled() {
   if (!isFirebaseStorageEnabled()) {
-    throw new Error("Uploads de imagem estão desativados no modo sem custos.");
+    throw new Error("Uploads de imagem estão desativados no modo Spark atual.");
   }
 }
 

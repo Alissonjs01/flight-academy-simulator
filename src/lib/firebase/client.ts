@@ -1,7 +1,6 @@
 import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { connectAuthEmulator, getAuth, type Auth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore, type Firestore } from "firebase/firestore";
-import { connectStorageEmulator, getStorage, type FirebaseStorage } from "firebase/storage";
 import { assertFirebaseConfigured, getFirebaseConfigStatus, isFirebaseStorageEnabled } from "@/lib/firebase/config";
 
 let authEmulatorConnected = false;
@@ -29,17 +28,18 @@ export function getFirebaseDb(): Firestore {
   return db;
 }
 
-export function getFirebaseStorage(): FirebaseStorage {
+export async function getFirebaseStorage(): Promise<import("firebase/storage").FirebaseStorage> {
   if (!isFirebaseStorageEnabled()) {
-    throw new Error("Firebase Storage está desativado neste ambiente para manter o projeto sem custos. Ative somente quando o Storage estiver configurado no seu projeto Firebase.");
+    throw new Error("Firebase Storage está desativado no modo Spark atual. Ative somente quando o Storage estiver configurado no seu projeto Firebase.");
   }
 
+  const { connectStorageEmulator, getStorage } = await import("firebase/storage");
   const storage = getStorage(getFirebaseApp());
-  connectEmulators(undefined, undefined, storage);
+  connectStorageEmulatorWhenNeeded(storage, connectStorageEmulator);
   return storage;
 }
 
-function connectEmulators(auth?: Auth, db?: Firestore, storage?: FirebaseStorage) {
+function connectEmulators(auth?: Auth, db?: Firestore) {
   const status = getFirebaseConfigStatus();
 
   if (!status.useEmulators) {
@@ -60,14 +60,26 @@ function connectEmulators(auth?: Auth, db?: Firestore, storage?: FirebaseStorage
       connectFirestoreEmulator(db, "127.0.0.1", 8080);
       firestoreEmulatorConnected = true;
     }
-
-    if (storage && !storageEmulatorConnected) {
-      connectStorageEmulator(storage, "127.0.0.1", 9199);
-      storageEmulatorConnected = true;
-    }
   } catch {
     authEmulatorConnected = Boolean(auth) || authEmulatorConnected;
     firestoreEmulatorConnected = Boolean(db) || firestoreEmulatorConnected;
-    storageEmulatorConnected = Boolean(storage) || storageEmulatorConnected;
+  }
+}
+
+function connectStorageEmulatorWhenNeeded(
+  storage: import("firebase/storage").FirebaseStorage,
+  connectStorageEmulator: (storage: import("firebase/storage").FirebaseStorage, host: string, port: number) => void
+) {
+  const status = getFirebaseConfigStatus();
+
+  if (!status.useEmulators || typeof window === "undefined" || storageEmulatorConnected) {
+    return;
+  }
+
+  try {
+    connectStorageEmulator(storage, "127.0.0.1", 9199);
+    storageEmulatorConnected = true;
+  } catch {
+    storageEmulatorConnected = true;
   }
 }

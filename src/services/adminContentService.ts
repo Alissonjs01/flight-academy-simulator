@@ -16,7 +16,7 @@ import {
   updateDoc,
   where
 } from "firebase/firestore";
-import { deleteObject, getDownloadURL, ref, uploadBytesResumable, type UploadTask } from "firebase/storage";
+import type { UploadTask } from "firebase/storage";
 import { adminEntityConfigs } from "@/features/admin/entityConfig";
 import type {
   AdminAuditAction,
@@ -312,9 +312,9 @@ export async function deleteAdminContent(entityType: AdminEntityType, id: string
   await writeAuditLog(context, "delete", entityType, id, title, []);
 }
 
-export function uploadAdminImage(entityType: AdminEntityType, entityId: string, file: File, alt: string, onProgress: (progress: number) => void): UploadTask {
+export async function uploadAdminImage(entityType: AdminEntityType, entityId: string, file: File, alt: string, onProgress: (progress: number) => void): Promise<{ task: UploadTask }> {
   if (!isFirebaseStorageEnabled()) {
-    throw new Error("Uploads estão desativados no modo sem custos. O conteúdo pode ser salvo sem imagem e o Storage pode ser ativado futuramente.");
+    throw new Error("Uploads estão desativados no modo Spark atual. O conteúdo pode ser salvo sem imagem e o Storage pode ser ativado futuramente.");
   }
 
   const config = adminEntityConfigs[entityType];
@@ -333,7 +333,8 @@ export function uploadAdminImage(entityType: AdminEntityType, entityId: string, 
 
   const safeName = `${Date.now()}-${file.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-")}`;
   const storagePath = `${config.uploadFolder}/${entityId}/${safeName}`;
-  const storageRef = ref(getFirebaseStorage(), storagePath);
+  const [{ ref, uploadBytesResumable }, storage] = await Promise.all([import("firebase/storage"), getFirebaseStorage()]);
+  const storageRef = ref(storage, storagePath);
   const task = uploadBytesResumable(storageRef, file, {
     contentType: file.type,
     customMetadata: { alt }
@@ -343,17 +344,18 @@ export function uploadAdminImage(entityType: AdminEntityType, entityId: string, 
     onProgress(Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100));
   });
 
-  return task;
+  return { task };
 }
 
 export async function completeAdminUpload(entityType: AdminEntityType, entityId: string, task: UploadTask, alt: string): Promise<AdminUploadResult> {
   if (!isFirebaseStorageEnabled()) {
-    throw new Error("Uploads estão desativados no modo sem custos.");
+    throw new Error("Uploads estão desativados no modo Spark atual.");
   }
 
   const context = await getAdminContext();
   const config = adminEntityConfigs[entityType];
   const uploadSnapshot = await task;
+  const { getDownloadURL } = await import("firebase/storage");
   const url = await getDownloadURL(uploadSnapshot.ref);
   const storagePath = uploadSnapshot.ref.fullPath;
   const payload = imagePayloadFor(entityType, entityId, url, storagePath, alt);
@@ -369,10 +371,11 @@ export async function completeAdminUpload(entityType: AdminEntityType, entityId:
 
 export async function deleteAdminStorageFile(storagePath: string) {
   if (!isFirebaseStorageEnabled()) {
-    throw new Error("Firebase Storage está desativado neste ambiente.");
+    return;
   }
 
-  await deleteObject(ref(getFirebaseStorage(), storagePath));
+  const [{ deleteObject, ref }, storage] = await Promise.all([import("firebase/storage"), getFirebaseStorage()]);
+  await deleteObject(ref(storage, storagePath));
 }
 
 export async function listAuditLogs(entityType?: AdminEntityType, entityId?: string) {
