@@ -63,6 +63,7 @@ function media(kind: AvionicMediaReference["kind"], slug: string, alt: string): 
     avionicId,
     kind,
     alt,
+    ...(kind === "main" && slug === "main" ? { url: "/images/avionics/g1000-nxi/overview.png" } : {}),
     storagePath: `avionics/garmin-g1000-nxi/${slug}.jpg`,
     caption: "Referência visual local para estudo. Diagramas oficiais devem ser vinculados somente quando houver licença ou fonte autorizada.",
     publicationState: "published",
