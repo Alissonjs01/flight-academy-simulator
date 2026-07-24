@@ -68,7 +68,7 @@ export function Sidebar({ isCollapsed, isMobileOpen, onCloseMobile }: SidebarPro
       </nav>
 
       <div className={clsx("border-t border-white/[0.08] p-4", isCollapsed && "lg:px-3")}>
-        <p className={clsx("text-[0.68rem] uppercase tracking-[0.18em] text-slate-600", isCollapsed && "lg:hidden")}>MSFS Study OS</p>
+        <p className={clsx("text-[0.68rem] uppercase tracking-[0.18em] text-slate-600", isCollapsed && "lg:hidden")}>Flight Academy Simulator</p>
       </div>
     </aside>
   );

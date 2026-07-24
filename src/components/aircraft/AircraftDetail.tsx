@@ -19,7 +19,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useMemo, useState } from "react";
-import type { AircraftProfile } from "@/features/aircraft/types";
+import type { AircraftProfile, AircraftSystemDocument } from "@/features/aircraft/types";
 import { aircraftStudyStatusLabels } from "@/features/aircraft/statusLabels";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { SafeImage } from "@/components/ui/SafeImage";
@@ -168,7 +168,7 @@ function SystemsTab({ profile }: AircraftDetailProps) {
         <Article title={item.title} subtitle={categoryLabel(item.category)}>
           <p>{item.summary}</p>
           <p>{item.details}</p>
-          <ImageFeatureGrid />
+          <SystemDetailBlocks system={item} />
         </Article>
       )}
     />
@@ -234,7 +234,7 @@ function TrainingsTab({ profile }: AircraftDetailProps) {
   return (
     <section>
       <h2 className="text-2xl font-semibold text-white">Treinamentos</h2>
-      <p className="mt-2 text-sm text-slate-400">Módulos práticos para desenvolver familiaridade com a aeronave no simulador.</p>
+      <p className="mt-2 text-sm text-slate-400">Treinamentos cadastrados para desenvolver familiaridade com a aeronave no simulador.</p>
       <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {profile.trainings.map((item) => (
           <div key={item.id} className="overflow-hidden rounded-md border border-white/[0.08] bg-white/[0.035]">
@@ -344,24 +344,49 @@ function SpecLine({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ImageFeatureGrid() {
-  const cards = [
-    ["Missão", "Transporte regional, passageiros, carga e operações utilitárias."],
-    ["Versões", "Organização por variante e configuração conforme o estudo evoluir."],
-    ["Operação", "Aplicação no simulador com foco em entendimento e repetição."]
-  ];
+function SystemDetailBlocks({ system }: { system: AircraftSystemDocument }) {
+  const blocks = [
+    { title: "Componentes", items: system.components },
+    { title: "Controles", items: system.controls },
+    { title: "Indicações", items: system.indications },
+    { title: "Avisos", items: system.warnings },
+    { title: "Cuidados", items: system.cautions },
+    { title: "Notas", items: system.notes }
+  ].filter((block) => block.items?.length);
+
+  const textBlocks = [
+    { title: "Operação normal", body: system.normalOperation },
+    { title: "Considerações anormais", body: system.abnormalConsiderations }
+  ].filter((block) => block.body);
+
+  if (!blocks.length && !textBlocks.length && !system.subsections?.length) {
+    return null;
+  }
 
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      {cards.map(([title, body]) => (
-        <div key={title} className="overflow-hidden rounded-md border border-white/[0.08] bg-white/[0.035]">
-          <div className="flex aspect-[16/9] items-center justify-center bg-white/[0.04] text-aviation-cyan">
-            <Plane className="h-8 w-8" />
-          </div>
+    <div className="grid gap-4 md:grid-cols-2">
+      {blocks.map((block) => (
+        <div key={block.title} className="overflow-hidden rounded-md border border-white/[0.08] bg-white/[0.035]">
           <div className="p-4">
-            <p className="font-semibold text-white">{title}</p>
-            <p className="mt-3 text-sm leading-6 text-slate-300">{body}</p>
+            <p className="font-semibold text-white">{block.title}</p>
+            <ul className="mt-3 space-y-2 text-sm leading-6 text-slate-300">
+              {block.items?.map((item) => (
+                <li key={item}>• {item}</li>
+              ))}
+            </ul>
           </div>
+        </div>
+      ))}
+      {textBlocks.map((block) => (
+        <div key={block.title} className="rounded-md border border-white/[0.08] bg-white/[0.035] p-4">
+          <p className="font-semibold text-white">{block.title}</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">{block.body}</p>
+        </div>
+      ))}
+      {system.subsections?.map((section) => (
+        <div key={section.id} className="rounded-md border border-white/[0.08] bg-white/[0.035] p-4">
+          <p className="font-semibold text-white">{section.title}</p>
+          <p className="mt-3 text-sm leading-6 text-slate-300">{section.body}</p>
         </div>
       ))}
     </div>
