@@ -128,7 +128,7 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
         <Panel>
           <SectionHeader eyebrow="Sequência de estudos" title="Próximas ações" />
           <ol className="space-y-3">
-            {["Revisar a última aula", "Concluir o exercício", "Abrir a próxima aula liberada", "Registrar prática no simulador"].map((step, index) => (
+            {["Revisar a última aula", "Abrir a próxima aula liberada", "Praticar no simulador", "Registrar observações do estudo"].map((step, index) => (
               <li key={step} className="flex gap-3 rounded-md border border-white/10 bg-white/[0.035] p-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-aviation-cyan/12 text-sm font-semibold text-aviation-cyan">{index + 1}</span>
                 <span className="text-sm leading-6 text-slate-300">{step}</span>

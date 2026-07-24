@@ -101,8 +101,8 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats, profil
             <ProfileMetric icon={CheckCircle2} label="Aulas concluídas" value={`${stats.completedLessons} aula(s)`} />
             <ProfileMetric icon={BarChart3} label="Progresso geral" value={`${stats.overallProgressPercent}%`} />
             <ProfileMetric icon={ClipboardCheck} label="Checklists concluídos" value={`${stats.completedChecklists} checklist(s)`} />
-            <ProfileMetric icon={RotateCcw} label="Avaliações" value={`${stats.assessmentAttempts} tentativa(s)`} />
-            <ProfileMetric icon={BookOpen} label="Exercícios respondidos" value={`${stats.exerciseAttempts} resposta(s)`} />
+            <ProfileMetric icon={RotateCcw} label="Revisões registradas" value={`${stats.assessmentAttempts} registro(s)`} />
+            <ProfileMetric icon={BookOpen} label="Práticas registradas" value={`${stats.exerciseAttempts} registro(s)`} />
           </div>
 
           <p className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-slate-400">

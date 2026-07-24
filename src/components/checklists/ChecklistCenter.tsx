@@ -1,10 +1,9 @@
 "use client";
 
 import clsx from "clsx";
-import { AlertTriangle, CheckCircle2, RotateCcw } from "lucide-react";
+import { CheckCircle2, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { ChecklistDocument, FlightPhase, UserChecklistSessionDocument } from "@/features/checklists/types";
-import { checklistDisclaimer } from "@/features/checklists/data/localChecklists";
 import { flightPhaseLabels, getFlightPhaseLabel } from "@/features/checklists/statusLabels";
 import { readChecklistSession, resetChecklistSession, setChecklistMode, toggleChecklistItem } from "@/services/checklistSessionService";
 import { EmptyState } from "@/components/ui/StateMessage";
@@ -39,13 +38,6 @@ export function ChecklistCenter({ checklists }: { checklists: ChecklistDocument[
 
   return (
     <div className="space-y-5">
-      <Panel className="border-aviation-amber/25 bg-aviation-amber/[0.07]">
-        <div className="flex gap-3 text-sm leading-6 text-slate-200">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-aviation-amber" />
-          <p>{checklistDisclaimer}</p>
-        </div>
-      </Panel>
-
       <div className="grid gap-3 rounded-md border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[minmax(0,1fr)_14rem]">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Busca</span>
@@ -151,7 +143,6 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
           <p className="font-semibold text-white">Modo de estudo</p>
           <p className="mt-2">{checklist.studyMode.description}</p>
           <p className="mt-2 text-slate-400">Versão {checklist.version} · Atualizado em {formatDate(checklist.updatedAt)}</p>
-          <p className="mt-2 text-aviation-amber">{checklist.notes}</p>
           <div className="mt-4">
             <TechnicalMetadataSummary metadata={checklist.technicalMetadata} />
           </div>

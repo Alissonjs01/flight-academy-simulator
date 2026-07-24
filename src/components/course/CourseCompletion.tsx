@@ -1,9 +1,9 @@
 "use client";
 
-import { Award, BookOpen, Lock, Unlock } from "lucide-react";
+import { BookOpen, CheckCircle2, Lock, Unlock } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import type { CourseStructure, FinalAssessmentDocument, LessonDocument } from "@/features/content/types";
+import type { CourseStructure, LessonDocument } from "@/features/content/types";
 import type { StudentProgressDocument } from "@/features/progress/types";
 import { calculateCourseProgress, readLocalProgress } from "@/services/progressService";
 import { Panel } from "@/components/ui/Panel";
@@ -11,10 +11,9 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 
 type CourseCompletionProps = {
   structure: CourseStructure;
-  assessment?: FinalAssessmentDocument;
 };
 
-export function CourseCompletion({ structure, assessment }: CourseCompletionProps) {
+export function CourseCompletion({ structure }: CourseCompletionProps) {
   const orderedLessons = useMemo(() => structure.modules.flatMap((module) => module.lessons), [structure.modules]);
   const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(orderedLessons));
 
@@ -33,7 +32,7 @@ export function CourseCompletion({ structure, assessment }: CourseCompletionProp
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-aviation-cyan">Conclusão do curso</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">{structure.course.title}</h2>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">{structure.course.disclaimer}</p>
+            <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">Revise o progresso do curso e continue estudando no seu ritmo.</p>
           </div>
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-aviation-mint/30 bg-aviation-mint/[0.08] text-aviation-mint">
             {isComplete ? <Unlock className="h-7 w-7" /> : <Lock className="h-7 w-7" />}
@@ -41,7 +40,7 @@ export function CourseCompletion({ structure, assessment }: CourseCompletionProp
         </div>
 
         <div className="mt-6">
-          <ProgressBar value={summary.coursePercent} label="Progresso antes da avaliação" />
+          <ProgressBar value={summary.coursePercent} label="Progresso do curso" />
           <p className="mt-2 text-sm text-slate-400">
             {summary.completedLessons} de {summary.totalLessons} aula(s) concluída(s)
           </p>
@@ -57,17 +56,17 @@ export function CourseCompletion({ structure, assessment }: CourseCompletionProp
           </p>
         </Panel>
         <Panel>
-          <Award className="h-7 w-7 text-aviation-mint" />
+          <CheckCircle2 className="h-7 w-7 text-aviation-mint" />
           <h3 className="mt-4 text-lg font-semibold text-white">Próximo passo</h3>
           <p className="mt-2 text-sm leading-6 text-slate-400">
-            Ao concluir a avaliação final, a plataforma libera simbolicamente o curso Garmin G1000 NXi.
+            Ao concluir as aulas, avance para o próximo curso disponível e pratique os pontos estudados no simulador.
           </p>
         </Panel>
       </div>
 
       <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-400">
-          {isComplete ? "Você já pode iniciar a avaliação final." : "Conclua todas as aulas para liberar a avaliação final."}
+          {isComplete ? "Curso concluído. Continue para a próxima trilha quando quiser." : "Conclua todas as aulas para finalizar este curso."}
         </p>
         <div className="flex flex-wrap gap-3">
           {!isComplete && firstPendingLesson ? (
@@ -75,9 +74,9 @@ export function CourseCompletion({ structure, assessment }: CourseCompletionProp
               Continuar aulas
             </Link>
           ) : null}
-          {isComplete && assessment ? (
-            <Link href={`/cursos/${structure.course.slug}/avaliacao`} className="focus-ring rounded-md bg-aviation-cyan px-4 py-2 text-sm font-semibold text-aviation-ink">
-              Iniciar avaliação
+          {isComplete ? (
+            <Link href="/cursos" className="focus-ring rounded-md bg-aviation-cyan px-4 py-2 text-sm font-semibold text-aviation-ink">
+              Ver próximos cursos
             </Link>
           ) : null}
         </div>

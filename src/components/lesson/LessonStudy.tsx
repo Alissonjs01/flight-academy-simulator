@@ -1,26 +1,21 @@
 "use client";
 
 import clsx from "clsx";
-import { AlertTriangle, CheckCircle2, Lock, RotateCcw } from "lucide-react";
+import { Lock, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { LessonContext } from "@/features/content/types";
 import type { StudentProgressDocument } from "@/features/progress/types";
 import { getLessonStatusClass, lessonStatusLabels } from "@/features/content/statusLabels";
 import { completeLesson, getLessonStatus, isCourseUnlocked, readLocalProgress, setCurrentLesson } from "@/services/progressService";
-import { EmptyState, LoadingState } from "@/components/ui/StateMessage";
+import { LoadingState } from "@/components/ui/StateMessage";
 import { Panel } from "@/components/ui/Panel";
-import { ExercisePanel } from "@/components/exercise/ExercisePanel";
-import { summarizeLessonExercises } from "@/services/exerciseAttemptService";
-import { TechnicalMetadataSummary } from "@/components/technical/TechnicalMetadataSummary";
 
 export function LessonStudy({ context }: { context: LessonContext }) {
   const orderedLessons = useMemo(() => context.orderedLessons, [context.orderedLessons]);
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(orderedLessons));
   const [courseUnlocked, setCourseUnlocked] = useState(false);
-  const [exerciseVersion, setExerciseVersion] = useState(0);
-  const [exerciseSummary, setExerciseSummary] = useState(() => summarizeLessonExercises(context.exercises));
 
   useEffect(() => {
     const localProgress = readLocalProgress(orderedLessons);
@@ -36,10 +31,6 @@ export function LessonStudy({ context }: { context: LessonContext }) {
   const isCompleted = lessonState?.status === "concluida";
   const nextLessonState = context.nextLesson ? getLessonStatus(orderedLessons, progress, context.nextLesson.id) : undefined;
   const canContinue = Boolean(context.nextLesson && nextLessonState?.isUnlocked);
-
-  useEffect(() => {
-    setExerciseSummary(summarizeLessonExercises(context.exercises));
-  }, [context.exercises, exerciseVersion]);
 
   function handleComplete() {
     if (isLocked) {
@@ -74,15 +65,6 @@ export function LessonStudy({ context }: { context: LessonContext }) {
           <p className="mt-2 text-sm leading-7 text-slate-300">{context.lesson.objective}</p>
         </div>
 
-        <div className="mt-6 flex items-start gap-3 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.08] p-4 text-sm leading-6 text-slate-200">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-aviation-amber" />
-          <p>{context.course.disclaimer}</p>
-        </div>
-
-        <div className="mt-6">
-          <TechnicalMetadataSummary metadata={context.lesson.technicalMetadata} />
-        </div>
-
         <div className="mt-6 flex flex-wrap gap-2">
           {context.lesson.keyConcepts.map((concept) => (
             <span key={concept} className="rounded-sm border border-aviation-cyan/20 bg-aviation-cyan/[0.08] px-2 py-1 text-xs font-semibold text-aviation-cyan">
@@ -101,36 +83,6 @@ export function LessonStudy({ context }: { context: LessonContext }) {
           <LessonSection title="Ligação com a aula seguinte" body={context.lesson.nextLessonConnection} tone="mint" />
         </div>
       </Panel>
-
-      {context.exercises.length > 0 ? (
-        <div className="space-y-4">
-          <Panel>
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Exercícios da aula</p>
-                <h3 className="mt-2 text-lg font-semibold text-white">Prática e checagem de compreensão</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-                <InfoBox label="Concluídos" value={`${exerciseSummary.completedExercises}/${exerciseSummary.totalExercises}`} />
-                <InfoBox label="Acertos" value={String(exerciseSummary.correctCount)} />
-                <InfoBox label="Erros" value={String(exerciseSummary.wrongCount)} />
-                <InfoBox label="Revisões" value={String(exerciseSummary.reviewCount)} />
-              </div>
-            </div>
-            {exerciseSummary.completedExercises === exerciseSummary.totalExercises ? (
-              <div className="mt-4 flex items-center gap-2 rounded-md border border-aviation-mint/25 bg-aviation-mint/[0.08] p-3 text-sm text-aviation-mint">
-                <CheckCircle2 className="h-5 w-5" />
-                <span>Todos os exercícios desta aula possuem registro local.</span>
-              </div>
-            ) : null}
-          </Panel>
-          {context.exercises.map((exercise) => (
-            <ExercisePanel key={exercise.id} exercise={exercise} isLocked={isLocked} onAttemptSaved={() => setExerciseVersion((value) => value + 1)} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState title="Sem exercício cadastrado" description="Esta aula já pode ser concluída, e o exercício poderá ser adicionado futuramente." />
-      )}
 
       <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className={clsx("rounded-md border px-3 py-2 text-sm", getLessonStatusClass(lessonState?.status ?? "bloqueada"))}>

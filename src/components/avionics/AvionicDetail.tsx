@@ -134,7 +134,6 @@ function SectionTab({ section }: { section: AvionicSectionDocument }) {
         <h3 className="font-semibold text-white">Campos preparados</h3>
         <Block title="Pontos destacados" items={section.highlights} />
         <Block title="Exemplos" items={section.examples} />
-        <Block title="Exercícios" items={section.exercisePrompts} />
         <div className="mt-5">
           <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Links internos para aulas</p>
           <div className="mt-3 flex flex-wrap gap-2">

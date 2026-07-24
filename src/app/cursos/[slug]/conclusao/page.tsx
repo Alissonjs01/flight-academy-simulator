@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { CourseCompletion } from "@/components/course/CourseCompletion";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getFinalAssessmentByCourseSlug } from "@/services/assessmentService";
 import { getCourseStructure } from "@/services/courseService";
 
 export default async function CourseConclusionPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -12,12 +11,10 @@ export default async function CourseConclusionPage({ params }: { params: Promise
     notFound();
   }
 
-  const assessment = await getFinalAssessmentByCourseSlug(slug);
-
   return (
     <div className="mx-auto max-w-7xl">
-      <SectionHeader eyebrow="Conclusão" title={structure.course.title} description="Revise seu progresso e inicie a avaliação final do curso." />
-      <CourseCompletion structure={structure} assessment={assessment} />
+      <SectionHeader eyebrow="Conclusão" title={structure.course.title} description="Revise seu progresso e finalize o curso no seu ritmo." />
+      <CourseCompletion structure={structure} />
     </div>
   );
 }

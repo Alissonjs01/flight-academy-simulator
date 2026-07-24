@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpen, CheckCircle2, HelpCircle, Lightbulb, RotateCcw, XCircle } from "lucide-react";
+import { BookOpen, CheckCircle2, Lightbulb, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { ReviewItemDocument } from "@/features/content/types";
@@ -18,14 +18,6 @@ const sectionConfig = {
   lesson_review: {
     title: "Aulas marcadas para revisar",
     icon: BookOpen
-  },
-  wrong_question: {
-    title: "Perguntas erradas",
-    icon: XCircle
-  },
-  open_answer_not_understood: {
-    title: "Respostas abertas não compreendidas",
-    icon: HelpCircle
   },
   low_score_concept: {
     title: "Conceitos com baixa pontuação",
@@ -51,11 +43,10 @@ export function ReviewCenter({ references }: ReviewCenterProps) {
     setItems(readActiveReviewItems());
   }
 
+  const visibleItems = items.filter((item) => item.type === "lesson_review" || item.type === "low_score_concept");
   const groupedItems = {
-    lesson_review: items.filter((item) => item.type === "lesson_review"),
-    wrong_question: items.filter((item) => item.type === "wrong_question"),
-    open_answer_not_understood: items.filter((item) => item.type === "open_answer_not_understood"),
-    low_score_concept: items.filter((item) => item.type === "low_score_concept")
+    lesson_review: visibleItems.filter((item) => item.type === "lesson_review"),
+    low_score_concept: visibleItems.filter((item) => item.type === "low_score_concept")
   };
 
   return (
@@ -64,7 +55,7 @@ export function ReviewCenter({ references }: ReviewCenterProps) {
         <p className="text-xs uppercase tracking-[0.18em] text-aviation-cyan">Revisão</p>
         <h2 className="mt-2 text-2xl font-semibold text-white">Central de revisão do aluno</h2>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-          Esta área reúne itens gerados por respostas incorretas, autoavaliações e resultados de avaliação. Por enquanto, tudo fica salvo neste navegador.
+          Esta área reúne aulas e conceitos que merecem novo estudo. Por enquanto, tudo fica salvo neste navegador.
         </p>
         {recommendedLesson ? (
           <div className="mt-5 flex flex-col gap-3 rounded-md border border-aviation-cyan/25 bg-aviation-cyan/[0.08] p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -80,8 +71,8 @@ export function ReviewCenter({ references }: ReviewCenterProps) {
         ) : null}
       </Panel>
 
-      {items.length === 0 ? (
-        <EmptyState title="Nenhum item de revisão" description="Quando houver erros, conceitos fracos ou respostas abertas marcadas para revisar, eles aparecerão aqui." />
+      {visibleItems.length === 0 ? (
+        <EmptyState title="Nenhum item de revisão" description="Quando houver aulas ou conceitos marcados para revisar, eles aparecerão aqui." />
       ) : (
         (Object.keys(groupedItems) as Array<keyof typeof groupedItems>).map((type) => {
           const SectionIcon = sectionConfig[type].icon;

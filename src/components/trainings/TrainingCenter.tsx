@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { AlertTriangle, CheckCircle2, ClipboardEdit, PlayCircle } from "lucide-react";
+import { CheckCircle2, ClipboardEdit, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { TrainingDifficulty, TrainingDocument, TrainingStatus, UserTrainingRecordDocument } from "@/features/trainings/types";
@@ -46,13 +46,6 @@ export function TrainingCenter({ trainings }: { trainings: TrainingDocument[] })
 
   return (
     <div className="space-y-5">
-      <Panel className="border-aviation-amber/25 bg-aviation-amber/[0.07]">
-        <div className="flex gap-3 text-sm leading-6 text-slate-200">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-aviation-amber" />
-          <p>Os exemplos são treinamentos de simulador e não representam procedimentos aeronáuticos oficiais.</p>
-        </div>
-      </Panel>
-
       <div className="grid gap-3 rounded-md border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Busca</span>

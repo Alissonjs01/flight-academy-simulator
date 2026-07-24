@@ -122,15 +122,9 @@ export function CourseDetail({ structure }: { structure: CourseStructure }) {
           <SummaryItem label="Publicação" value={structure.course.publicationState === "published" ? "Publicado" : "Rascunho"} />
           <SummaryItem label="Atualizado em" value={formatDate(structure.course.updatedAt)} />
         </dl>
-        <div className="mt-6 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.08] p-3 text-xs leading-5 text-slate-300">
-          {structure.course.disclaimer}
-        </div>
         <div className="mt-4 grid gap-2">
           <Link href={`/cursos/${structure.course.slug}/conclusao`} className="focus-ring rounded-md bg-aviation-cyan px-4 py-2 text-center text-sm font-semibold text-aviation-ink">
             Conclusão do curso
-          </Link>
-          <Link href={`/cursos/${structure.course.slug}/avaliacao`} className="focus-ring rounded-md border border-white/10 bg-white/5 px-4 py-2 text-center text-sm font-semibold text-white">
-            Avaliação final
           </Link>
         </div>
       </Panel>
