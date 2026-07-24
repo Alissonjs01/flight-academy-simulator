@@ -159,6 +159,62 @@ describe("Firestore Security Rules", () => {
     }));
   });
 
+  it("permite instrutor criar sistema de aeronave provisório", async () => {
+    const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
+    await assertSucceeds(setDoc(doc(db, "aircraftSystems", "system-a"), technicalAircraftContent("system-a", "instructor-a", "draft")));
+  });
+
+  it("bloqueia aluno criando limitação técnica", async () => {
+    const db = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
+    await assertFails(setDoc(doc(db, "aircraftLimitations", "lim-a"), technicalAircraftContent("lim-a", "student-a", "draft")));
+  });
+
+  it("bloqueia publicação de limitação sem variante", async () => {
+    const db = testEnv.authenticatedContext("admin-a", { role: "admin" }).firestore();
+    await assertFails(setDoc(doc(db, "aircraftLimitations", "lim-no-variant"), {
+      ...technicalAircraftContent("lim-no-variant", "admin-a", "published"),
+      aircraftVariant: ""
+    }));
+  });
+
+  it("bloqueia verified sem fonte técnica identificável mesmo para admin", async () => {
+    const db = testEnv.authenticatedContext("admin-a", { role: "admin" }).firestore();
+    await assertFails(setDoc(doc(db, "aircraftLimitations", "lim-verified-no-source"), {
+      ...technicalAircraftContent("lim-verified-no-source", "admin-a", "published"),
+      aircraftVariant: "Variante",
+      technicalMetadata: {
+        contentClassification: "official_real_world",
+        verificationStatus: "verified"
+      }
+    }));
+  });
+
+  it("permite admin marcar verified quando há fonte técnica", async () => {
+    const db = testEnv.authenticatedContext("admin-a", { role: "admin" }).firestore();
+    await assertSucceeds(setDoc(doc(db, "aircraftLimitations", "lim-verified-source"), {
+      ...technicalAircraftContent("lim-verified-source", "admin-a", "published"),
+      aircraftVariant: "Variante",
+      technicalMetadata: {
+        contentClassification: "official_real_world",
+        verificationStatus: "verified",
+        sourceTitle: "AFM aplicável à variante",
+        sourceOrganization: "Fabricante"
+      }
+    }));
+  });
+
+  it("bloqueia instrutor marcando procedimento como verified", async () => {
+    const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
+    await assertFails(setDoc(doc(db, "aircraftProcedures", "proc-verified"), {
+      ...technicalAircraftContent("proc-verified", "instructor-a", "published"),
+      technicalMetadata: {
+        contentClassification: "official_real_world",
+        verificationStatus: "verified",
+        sourceTitle: "AFM aplicável à variante"
+      }
+    }));
+  });
+
   it("permite auditoria append-only para editor autorizado", async () => {
     const db = testEnv.authenticatedContext("instructor-a", { role: "instructor" }).firestore();
     const auditRef = doc(db, "auditLogs", "audit-a");
@@ -318,7 +374,8 @@ function verifiedCourse(id: string, owner = "admin-a") {
     ...publishedCourse(id, owner),
     technicalMetadata: {
       contentClassification: "official_real_world",
-      verificationStatus: "verified"
+      verificationStatus: "verified",
+      sourceTitle: "Documento técnico identificado"
     }
   };
 }
@@ -405,6 +462,27 @@ function privateTrainingRecord(userId: string) {
     personalNote: "Nota",
     status: "completed",
     updatedAt: "2026-07-23T00:00:00.000Z"
+  };
+}
+
+function technicalAircraftContent(id: string, owner: string, publicationState: "published" | "draft") {
+  return {
+    id,
+    aircraftId: "aircraft-c408",
+    aircraftVariant: "Variante provisória",
+    title: "Conteúdo técnico",
+    slug: id,
+    value: "Valor provisório",
+    order: 1,
+    publicationState,
+    createdAt: "2026-07-23T00:00:00.000Z",
+    updatedAt: "2026-07-23T00:00:00.000Z",
+    createdBy: owner,
+    updatedBy: owner,
+    technicalMetadata: {
+      contentClassification: "provisional_unverified",
+      verificationStatus: "pending_verification"
+    }
   };
 }
 

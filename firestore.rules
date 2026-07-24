@@ -117,7 +117,29 @@ service cloud.firestore {
             "pending_verification",
             "conflicting_sources",
             "obsolete"
-          ]
+          ] &&
+          validVerifiedSource() &&
+          validTechnicalVariant(collectionName)
+        );
+    }
+
+    function validVerifiedSource() {
+      return request.resource.data.technicalMetadata.verificationStatus != "verified" ||
+        (
+          request.resource.data.technicalMetadata.keys().hasAny(["sourceTitle"]) &&
+          request.resource.data.technicalMetadata.sourceTitle is string &&
+          request.resource.data.technicalMetadata.sourceTitle.size() > 2 &&
+          !request.resource.data.technicalMetadata.sourceTitle.matches("(?i).*(chatgpt|inteligência artificial|inteligencia artificial|modelo de linguagem|llm).*")
+        );
+    }
+
+    function validTechnicalVariant(collectionName) {
+      return collectionName != "aircraftLimitations" ||
+        request.resource.data.publicationState != "published" ||
+        (
+          request.resource.data.keys().hasAny(["aircraftVariant"]) &&
+          request.resource.data.aircraftVariant is string &&
+          request.resource.data.aircraftVariant.size() > 1
         );
     }
 

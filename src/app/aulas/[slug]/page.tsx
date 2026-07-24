@@ -3,8 +3,9 @@ import { LessonStudy } from "@/components/lesson/LessonStudy";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { getLessonContext } from "@/services/lessonService";
 
-export default async function LessonPage({ params }: { params: { slug: string } }) {
-  const context = await getLessonContext(params.slug);
+export default async function LessonPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const context = await getLessonContext(slug);
 
   if (!context) {
     notFound();

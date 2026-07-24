@@ -4,9 +4,10 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { getFinalAssessmentByCourseSlug } from "@/services/assessmentService";
 import { getCourseStructure } from "@/services/courseService";
 
-export default async function CourseAssessmentPage({ params }: { params: { slug: string } }) {
-  const structure = await getCourseStructure(params.slug);
-  const assessment = await getFinalAssessmentByCourseSlug(params.slug);
+export default async function CourseAssessmentPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const structure = await getCourseStructure(slug);
+  const assessment = await getFinalAssessmentByCourseSlug(slug);
 
   if (!structure || !assessment) {
     notFound();

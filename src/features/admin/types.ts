@@ -9,6 +9,10 @@ export type AdminEntityType =
   | "lesson"
   | "exercise"
   | "aircraft"
+  | "aircraftSystem"
+  | "aircraftLimitation"
+  | "aircraftProcedure"
+  | "aircraftPerformance"
   | "avionic"
   | "checklist"
   | "training";
@@ -19,6 +23,10 @@ export type AdminCollectionName =
   | "lessons"
   | "exercises"
   | "aircraft"
+  | "aircraftSystems"
+  | "aircraftLimitations"
+  | "aircraftProcedures"
+  | "aircraftPerformance"
   | "avionics"
   | "checklists"
   | "trainings";
@@ -98,6 +106,13 @@ export type AdminAuditAction =
   | "publish"
   | "unpublish"
   | "archive"
+  | "restore"
+  | "submitForReview"
+  | "verify"
+  | "markConflict"
+  | "createRevision"
+  | "changeActiveVersion"
+  | "migrateReferences"
   | "delete"
   | "upload";
 

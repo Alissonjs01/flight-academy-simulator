@@ -458,6 +458,31 @@ Ainda devem ser conferidos manualmente quando voce estiver com os dispositivos:
 
 Nao houve deploy nem validacao em Firebase real nesta etapa.
 
+## Editores tecnicos especializados
+
+O painel administrativo possui editores especializados para conteudo aeronautico, funcionando localmente e com Firebase Emulator Suite:
+
+- sistemas da aeronave (`aircraftSystems`);
+- limitacoes (`aircraftLimitations`);
+- procedimentos (`aircraftProcedures`);
+- performance (`aircraftPerformance`);
+- aulas em blocos estruturados;
+- checklists com versao, secoes e itens estaveis.
+
+Esses editores preservam IDs, slugs e relacionamentos existentes. Os formularios genericos continuam disponiveis para cursos, modulos, exercicios, aeronaves, avionicos e treinamentos, enquanto os conteudos tecnicos usam campos especificos de fonte, variante, adaptacao ao simulador, revisao e verificacao.
+
+Regras importantes:
+
+- nao inventar dados tecnicos ausentes;
+- nao publicar limitacao tecnica sem variante real aplicavel;
+- nao marcar conteudo como `verified` sem fonte identificavel;
+- instrutor pode criar e editar conteudo permitido, mas nao pode marcar `verified`;
+- somente admin pode promover conteudo tecnico para verificado;
+- IA nao pode ser registrada como fonte tecnica;
+- checklists publicados devem gerar nova versao antes de alteracoes relevantes.
+
+O fluxo detalhado esta em `TECHNICAL_CONTENT_WORKFLOW.md`.
+
 ## Pre-publicacao
 
 Antes de conectar Firebase real, GitHub remoto ou publicar, siga o roteiro em `PRE_PUBLICATION_CHECKLIST.md`.

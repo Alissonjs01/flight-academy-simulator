@@ -8,11 +8,43 @@ export type LearningStatus = "not_started" | "in_progress" | "completed" | "lock
 
 export type LessonRuntimeStatus = "concluida" | "atual" | "bloqueada" | "disponivel";
 
+export type LessonBlockType =
+  | "heading"
+  | "paragraph"
+  | "bulletList"
+  | "numberedList"
+  | "image"
+  | "simpleTable"
+  | "callout"
+  | "warning"
+  | "caution"
+  | "note"
+  | "definition"
+  | "example"
+  | "commonMistake"
+  | "simulatorApplication"
+  | "technicalSource"
+  | "simulatorDifference"
+  | "checklistReference"
+  | "exerciseReference"
+  | "aircraftReference"
+  | "avionicsReference"
+  | "summary"
+  | "knowledgeCheck";
+
 export type ContentBlock = {
   id: string;
-  type: "paragraph" | "callout" | "checklist";
+  type: LessonBlockType | "checklist";
   text?: string;
   items?: string[];
+  title?: string;
+  alt?: string;
+  url?: string;
+  rows?: Array<{ id: string; cells: string[] }>;
+  headers?: string[];
+  referenceId?: string;
+  settings?: Record<string, string | number | boolean | string[]>;
+  order?: number;
   technicalMetadata?: TechnicalMetadata;
 };
 

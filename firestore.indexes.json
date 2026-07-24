@@ -81,6 +81,70 @@
       ]
     },
     {
+      "collectionGroup": "aircraftSystems",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aircraftId", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftSystems",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "publicationState", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftLimitations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aircraftId", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftLimitations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "publicationState", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftProcedures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aircraftId", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftProcedures",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "publicationState", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftPerformance",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "aircraftId", "order": "ASCENDING" },
+        { "fieldPath": "order", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "aircraftPerformance",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "publicationState", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "avionics",
       "queryScope": "COLLECTION",
       "fields": [

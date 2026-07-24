@@ -41,7 +41,20 @@ type AdminContext = {
   role: AdminRole;
 };
 
-const contentCollections: AdminCollectionName[] = ["courses", "modules", "lessons", "exercises", "aircraft", "avionics", "checklists", "trainings"];
+const contentCollections: AdminCollectionName[] = [
+  "courses",
+  "modules",
+  "lessons",
+  "exercises",
+  "aircraft",
+  "aircraftSystems",
+  "aircraftLimitations",
+  "aircraftProcedures",
+  "aircraftPerformance",
+  "avionics",
+  "checklists",
+  "trainings"
+];
 const maxListSize = 80;
 const maxUploadBytesByFolder = {
   courseImages: 5 * 1024 * 1024,
@@ -473,12 +486,23 @@ async function getDependencySummary(entityType: AdminEntityType, id: string) {
     checks.push(["exercises", "lessonId", "exercícios"]);
   }
   if (entityType === "aircraft") {
-    checks.push(["checklists", "aircraftId", "checklists"], ["trainings", "aircraftId", "treinamentos"]);
+    checks.push(
+      ["aircraftSystems", "aircraftId", "sistemas"],
+      ["aircraftLimitations", "aircraftId", "limitações"],
+      ["aircraftProcedures", "aircraftId", "procedimentos"],
+      ["aircraftPerformance", "aircraftId", "performance"],
+      ["checklists", "aircraftId", "checklists"],
+      ["trainings", "aircraftId", "treinamentos"]
+    );
+  }
+  if (entityType === "aircraftSystem") {
+    checks.push(["aircraftSystems", "relatedSystemIds", "sistemas relacionados"]);
   }
 
   const results = await Promise.all(
     checks.map(async ([collectionName, field, label]) => {
-      const snapshot = await getCountFromServer(query(collection(getFirebaseDb(), collectionName), where(field, "==", id)));
+      const operator: "array-contains" | "==" = field === "relatedSystemIds" ? "array-contains" : "==";
+      const snapshot = await getCountFromServer(query(collection(getFirebaseDb(), collectionName), where(field, operator, id)));
       return snapshot.data().count > 0 ? label : "";
     })
   );

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { DeletionImpactPanel, hasSpecializedTechnicalEditor, RevisionComparator, SpecializedTechnicalEditor } from "@/components/admin/SpecializedTechnicalEditors";
 import { Panel } from "@/components/ui/Panel";
 import { EmptyState, ErrorState, LoadingState } from "@/components/ui/StateMessage";
 import { adminEntityConfigs, adminEntityOrder } from "@/features/admin/entityConfig";
@@ -481,11 +482,13 @@ function AdminForm({
             <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
               <div className="space-y-4">
                 <CommonFields entityType={entityType} payload={payload} setField={setField} />
-                <EntitySpecificFields entityType={entityType} payload={payload} setField={setField} />
-                {config.technical ? <TechnicalMetadataEditor payload={payload} role={role} setField={setField} /> : null}
+                <EntitySpecificFields entityType={entityType} payload={payload} initialPayload={initialPayload} setField={setField} />
+                {config.technical && !hasSpecializedTechnicalEditor(entityType) ? <TechnicalMetadataEditor payload={payload} role={role} setField={setField} /> : null}
               </div>
               <div className="space-y-4">
                 <PreviewPanel entityType={entityType} payload={payload} />
+                <RevisionComparator previous={initialPayload} current={payload} />
+                <DeletionImpactPanel entityType={entityType} payload={payload} />
                 {config.uploadFolder ? (
                   <Panel>
                     <p className="text-sm font-semibold text-white">Imagem</p>
@@ -526,7 +529,21 @@ function CommonFields({ entityType, payload, setField }: { entityType: AdminEnti
   );
 }
 
-function EntitySpecificFields({ entityType, payload, setField }: { entityType: AdminEntityType; payload: AdminContentPayload; setField: (field: string, value: unknown) => void }) {
+function EntitySpecificFields({
+  entityType,
+  payload,
+  initialPayload,
+  setField
+}: {
+  entityType: AdminEntityType;
+  payload: AdminContentPayload;
+  initialPayload?: AdminContentPayload;
+  setField: (field: string, value: unknown) => void;
+}) {
+  if (hasSpecializedTechnicalEditor(entityType)) {
+    return <SpecializedTechnicalEditor entityType={entityType} payload={payload} initialPayload={initialPayload} setField={setField} />;
+  }
+
   if (entityType === "course") {
     return (
       <Panel>

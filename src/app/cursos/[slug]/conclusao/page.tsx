@@ -4,14 +4,15 @@ import { SectionHeader } from "@/components/ui/SectionHeader";
 import { getFinalAssessmentByCourseSlug } from "@/services/assessmentService";
 import { getCourseStructure } from "@/services/courseService";
 
-export default async function CourseConclusionPage({ params }: { params: { slug: string } }) {
-  const structure = await getCourseStructure(params.slug);
+export default async function CourseConclusionPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const structure = await getCourseStructure(slug);
 
   if (!structure) {
     notFound();
   }
 
-  const assessment = await getFinalAssessmentByCourseSlug(params.slug);
+  const assessment = await getFinalAssessmentByCourseSlug(slug);
 
   return (
     <div className="mx-auto max-w-7xl">

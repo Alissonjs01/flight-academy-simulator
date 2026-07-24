@@ -204,9 +204,13 @@ function ProceduresTab({ profile }: AircraftDetailProps) {
             <p className="text-xs uppercase tracking-[0.16em] text-aviation-cyan">{item.phase}</p>
             <p className="mt-2 font-semibold text-white">{item.title}</p>
             <ul className="mt-3 space-y-2 text-sm text-slate-300">
-              {item.steps.map((step) => (
-                <li key={step}>• {step}</li>
-              ))}
+              {item.steps.map((step, index) => {
+                const stepId = typeof step === "string" ? `${item.id}-step-${index}` : step.id;
+                const stepText = typeof step === "string" ? step : [step.action, step.expectedPositionOrValue].filter(Boolean).join(" — ");
+                return (
+                  <li key={stepId}>• {stepText}</li>
+                );
+              })}
             </ul>
             <p className="mt-4 text-sm leading-6 text-aviation-amber">{item.safetyNote}</p>
             <TechnicalMetadataSummary metadata={item.technicalMetadata} compact />

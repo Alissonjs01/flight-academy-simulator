@@ -15,6 +15,7 @@
     "seed:firebase": "tsx scripts/seedFirestore.ts",
     "seed:emulator": "firebase emulators:exec --only firestore \"tsx scripts/seedFirestore.ts\"",
     "admin:set": "tsx scripts/setAdminClaim.ts",
+    "test": "vitest run tests/admin-validation.test.ts tests/content-fidelity.test.ts tests/local-migration.test.ts tests/pwa.test.ts",
     "test:pwa": "vitest run tests/pwa.test.ts",
     "test:rules": "firebase emulators:exec --only firestore,storage \"vitest run tests/firebase-rules.test.ts\"",
     "test:firebase": "firebase emulators:exec --only auth,firestore,storage \"vitest run tests\""
@@ -23,7 +24,7 @@
     "clsx": "2.1.1",
     "firebase": "^12.16.0",
     "lucide-react": "0.468.0",
-    "next": "14.2.35",
+    "next": "15.5.21",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
@@ -34,7 +35,7 @@
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.19",
     "eslint": "8.57.0",
-    "eslint-config-next": "14.2.35",
+    "eslint-config-next": "15.5.21",
     "firebase-admin": "^14.2.0",
     "firebase-tools": "^15.24.0",
     "postcss": "8.5.12",
