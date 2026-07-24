@@ -12,7 +12,7 @@ export function MobileNavigation() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 overflow-hidden border-t border-white/10 bg-aviation-panel/95 px-2 py-2 backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 overflow-hidden border-t border-white/[0.08] bg-[#050c14]/95 px-2 py-2 backdrop-blur-xl lg:hidden"
       aria-label="Navegação inferior"
     >
       {mobileItems.map((item) => {
@@ -25,7 +25,7 @@ export function MobileNavigation() {
             href={item.href}
             className={clsx(
               "focus-ring flex min-h-12 min-w-0 flex-col items-center justify-center gap-1 rounded-md text-[0.68rem] font-medium",
-              isActive ? "bg-aviation-cyan/15 text-aviation-cyan" : "text-slate-400"
+              isActive ? "bg-aviation-cyan/[0.12] text-aviation-cyan" : "text-slate-400"
             )}
           >
             <Icon className="h-5 w-5" />

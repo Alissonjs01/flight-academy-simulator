@@ -46,7 +46,7 @@ export function LessonStudy({ context }: { context: LessonContext }) {
 
   return (
     <div className="space-y-4">
-      <Panel>
+      <Panel className="bg-white/[0.028]">
         <div className="grid gap-4 sm:grid-cols-3">
           <InfoBox label="Módulo" value={context.module.title} />
           <InfoBox label="Duração" value={context.lesson.estimatedDuration} />
@@ -73,7 +73,7 @@ export function LessonStudy({ context }: { context: LessonContext }) {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-4">
+        <div className="mt-8 divide-y divide-white/[0.08]">
           <LessonSection title="Introdução" body={context.lesson.introduction} />
           <LessonSection title="Explicação didática" body={context.lesson.didacticExplanation} />
           <LessonSection title="Exemplo" body={context.lesson.example} tone="cyan" />
@@ -84,7 +84,7 @@ export function LessonStudy({ context }: { context: LessonContext }) {
         </div>
       </Panel>
 
-      <Panel className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <Panel className="flex flex-col gap-3 bg-white/[0.028] sm:flex-row sm:items-center sm:justify-between">
         <div className={clsx("rounded-md border px-3 py-2 text-sm", getLessonStatusClass(lessonState?.status ?? "bloqueada"))}>
           {lessonStatusLabels[lessonState?.status ?? "bloqueada"]}
         </div>
@@ -135,22 +135,22 @@ function LessonSection({ title, body, tone = "default" }: { title: string; body:
   return (
     <section
       className={clsx(
-        "rounded-md border p-4 text-sm leading-7",
-        tone === "default" && "border-white/10 bg-white/[0.035] text-slate-300",
-        tone === "cyan" && "border-aviation-cyan/25 bg-aviation-cyan/[0.08] text-slate-200",
-        tone === "amber" && "border-aviation-amber/25 bg-aviation-amber/[0.08] text-slate-200",
-        tone === "mint" && "border-aviation-mint/25 bg-aviation-mint/[0.07] text-slate-200"
+        "py-5 text-sm leading-7",
+        tone === "default" && "text-slate-300",
+        tone === "cyan" && "text-slate-200",
+        tone === "amber" && "text-slate-200",
+        tone === "mint" && "text-slate-200"
       )}
     >
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">{title}</p>
-      <p className="mt-2">{body}</p>
+      <p className={clsx("text-xs font-semibold uppercase tracking-[0.16em]", tone === "cyan" ? "text-aviation-cyan" : tone === "mint" ? "text-aviation-mint" : "text-slate-500")}>{title}</p>
+      <p className="mt-3 max-w-5xl">{body}</p>
     </section>
   );
 }
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.035] p-3">
+    <div className="rounded-md border border-white/[0.08] bg-white/[0.028] p-3">
       <p className="text-sm text-slate-500">{label}</p>
       <p className="mt-1 font-semibold text-white">{value}</p>
     </div>

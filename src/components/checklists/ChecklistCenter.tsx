@@ -38,14 +38,14 @@ export function ChecklistCenter({ checklists }: { checklists: ChecklistDocument[
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 rounded-md border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[minmax(0,1fr)_14rem]">
+      <div className="grid gap-3 rounded-md border border-white/[0.08] bg-white/[0.028] p-4 md:grid-cols-[minmax(0,1fr)_14rem]">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Busca</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por título, descrição ou aeronave"
-            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white placeholder:text-slate-500"
+            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white placeholder:text-slate-500"
           />
         </label>
         <label className="block">
@@ -53,7 +53,7 @@ export function ChecklistCenter({ checklists }: { checklists: ChecklistDocument[
           <select
             value={phase}
             onChange={(event) => setPhase(event.target.value as FlightPhase | typeof allOption)}
-            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white"
+            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white"
           >
             {phases.map((item) => (
               <option key={item} value={item}>
@@ -74,7 +74,7 @@ export function ChecklistCenter({ checklists }: { checklists: ChecklistDocument[
                 onClick={() => setSelectedChecklistId(checklist.id)}
                 className={clsx(
                   "focus-ring w-full rounded-md border p-4 text-left transition",
-                  selectedChecklist?.id === checklist.id ? "border-aviation-cyan/50 bg-aviation-cyan/[0.08]" : "border-white/10 bg-white/[0.035] hover:border-aviation-cyan/35"
+                  selectedChecklist?.id === checklist.id ? "border-aviation-cyan/50 bg-aviation-cyan/[0.08]" : "border-white/[0.08] bg-white/[0.028] hover:border-aviation-cyan/35"
                 )}
               >
                 <p className="text-xs uppercase tracking-[0.16em] text-aviation-cyan">{getFlightPhaseLabel(checklist.flightPhase)}</p>
@@ -133,13 +133,13 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
       </div>
 
       {isOperational && incompleteCriticalItems.length ? (
-        <div className="mt-4 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.08] p-3 text-sm text-slate-200">
+        <div className="mt-4 rounded-md border border-aviation-cyan/25 bg-aviation-cyan/[0.08] p-3 text-sm text-slate-200">
           Há {incompleteCriticalItems.length} item(ns) crítico(s) pendente(s).
         </div>
       ) : null}
 
       {!isOperational ? (
-        <div className="mt-5 rounded-md border border-white/10 bg-white/[0.035] p-4 text-sm leading-6 text-slate-300">
+        <div className="mt-5 rounded-md border border-white/[0.08] bg-white/[0.028] p-4 text-sm leading-6 text-slate-300">
           <p className="font-semibold text-white">Modo de estudo</p>
           <p className="mt-2">{checklist.studyMode.description}</p>
           <p className="mt-2 text-slate-400">Versão {checklist.version} · Atualizado em {formatDate(checklist.updatedAt)}</p>
@@ -154,7 +154,7 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
           const completed = session.completedItemIds.includes(item.id);
 
           return (
-            <div key={item.id} className={clsx("rounded-md border p-3", completed ? "border-aviation-mint/30 bg-aviation-mint/[0.07]" : "border-white/10 bg-white/[0.035]")}>
+            <div key={item.id} className={clsx("rounded-md border p-3", completed ? "border-aviation-mint/30 bg-aviation-mint/[0.07]" : "border-white/[0.08] bg-white/[0.028]")}>
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
@@ -171,7 +171,7 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
                 </span>
               </label>
               {!isOperational ? (
-                <details className="mt-3 rounded-md border border-white/10 bg-aviation-ink/45 p-3 text-sm leading-6 text-slate-300">
+                <details className="mt-3 rounded-md border border-white/[0.08] bg-[#050c14]/70 p-3 text-sm leading-6 text-slate-300">
                   <summary className="cursor-pointer font-semibold text-aviation-cyan">Explicação e observação</summary>
                   <p className="mt-2">{item.explanation}</p>
                   <p className="mt-2 text-slate-400">{item.observation}</p>
@@ -184,7 +184,7 @@ function ChecklistRunner({ checklist }: { checklist: ChecklistDocument }) {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-        <button type="button" onClick={handleReset} className="focus-ring inline-flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white">
+        <button type="button" onClick={handleReset} className="focus-ring inline-flex items-center gap-2 rounded-md border border-white/[0.08] bg-white/[0.035] px-4 py-2 text-sm font-semibold text-white">
           <RotateCcw className="h-4 w-4" />
           Reiniciar
         </button>
@@ -204,7 +204,7 @@ function ModeButton({ active, label, onClick }: { active: boolean; label: string
     <button
       type="button"
       onClick={onClick}
-      className={clsx("focus-ring rounded-md px-3 py-2 text-sm font-semibold", active ? "bg-aviation-cyan text-aviation-ink" : "border border-white/10 bg-white/5 text-white")}
+      className={clsx("focus-ring rounded-md px-3 py-2 text-sm font-semibold", active ? "bg-aviation-cyan text-aviation-ink" : "border border-white/[0.08] bg-white/[0.035] text-white")}
     >
       {label}
     </button>

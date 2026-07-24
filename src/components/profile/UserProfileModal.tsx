@@ -50,22 +50,22 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats, profil
 
   return (
     <div
-      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/65 px-3 py-4 sm:items-center"
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/72 px-3 py-4 backdrop-blur-sm sm:items-center"
       role="dialog"
       aria-modal="true"
       aria-labelledby="profile-modal-title"
       onMouseDown={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-md border border-white/10 bg-aviation-ink shadow-2xl"
+        className="w-full max-w-2xl rounded-md border border-white/[0.08] bg-[#050c14] shadow-2xl"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-4 border-b border-white/[0.08] p-4 sm:p-5">
           <div className="flex min-w-0 items-center gap-3">
             <UserAvatar
               src={profile?.photoURL ?? user.photoURL}
               name={displayName}
-              className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-white/5 object-cover text-base font-semibold text-aviation-cyan"
+              className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-md border border-aviation-cyan/25 bg-aviation-cyan/[0.08] object-cover text-base font-semibold text-aviation-cyan"
             />
             <div className="min-w-0">
               <h2 id="profile-modal-title" className="truncate text-lg font-semibold text-white">{displayName}</h2>
@@ -75,7 +75,7 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats, profil
               </p>
             </div>
           </div>
-          <button type="button" onClick={onClose} className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/10 bg-white/5 text-slate-100" aria-label="Fechar perfil">
+          <button type="button" onClick={onClose} className="focus-ring inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-white/[0.08] bg-white/[0.035] text-slate-100" aria-label="Fechar perfil">
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -87,7 +87,7 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats, profil
             </div>
           ) : null}
           {isProfileLoading ? (
-            <div className="mb-4 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-slate-300">
+            <div className="mb-4 rounded-md border border-white/[0.08] bg-white/[0.028] p-3 text-sm leading-6 text-slate-300">
               Atualizando dados do perfil...
             </div>
           ) : null}
@@ -105,7 +105,7 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats, profil
             <ProfileMetric icon={BookOpen} label="Práticas registradas" value={`${stats.exerciseAttempts} registro(s)`} />
           </div>
 
-          <p className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-slate-400">
+          <p className="mt-4 rounded-md border border-white/[0.08] bg-white/[0.028] p-3 text-sm leading-6 text-slate-400">
             Os números são calculados pelo progresso associado ao usuário autenticado. Quando não houver registros, a plataforma mostra estados vazios em vez de usar dados fictícios.
           </p>
         </div>
@@ -116,7 +116,7 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats, profil
 
 function ProfileInfo({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.035] p-3">
+    <div className="rounded-md border border-white/[0.08] bg-white/[0.028] p-3">
       <div className="flex items-center gap-2 text-xs uppercase tracking-[0.16em] text-slate-500">
         <Icon className="h-4 w-4 text-aviation-cyan" />
         {label}
@@ -128,7 +128,7 @@ function ProfileInfo({ icon: Icon, label, value }: { icon: LucideIcon; label: st
 
 function ProfileMetric({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.035] p-3">
+    <div className="rounded-md border border-white/[0.08] bg-white/[0.028] p-3">
       <Icon className="h-5 w-5 text-aviation-cyan" />
       <p className="mt-3 text-xs uppercase tracking-[0.16em] text-slate-500">{label}</p>
       <p className="mt-1 text-sm font-semibold text-white">{value}</p>

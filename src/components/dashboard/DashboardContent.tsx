@@ -44,7 +44,7 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
   return (
     <div className="mx-auto max-w-7xl space-y-6">
       <section className="grid min-w-0 gap-4 xl:grid-cols-[1.45fr_0.9fr]">
-        <Panel className="overflow-hidden">
+        <Panel className="overflow-hidden bg-white/[0.028]">
           <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_16rem] lg:items-center">
             <div className="min-w-0">
               <p className="text-sm font-medium text-aviation-cyan">Bem-vindo de volta, {displayName}</p>
@@ -59,12 +59,12 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
                 >
                   Continuar aula
                 </Link>
-                <Link href={`/cursos/${structure.course.slug}`} className="focus-ring rounded-md border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-white">
+                <Link href={`/cursos/${structure.course.slug}`} className="focus-ring rounded-md border border-white/[0.08] bg-white/[0.035] px-4 py-2 text-sm font-semibold text-white">
                   Ver curso
                 </Link>
               </div>
             </div>
-            <div className="rounded-md border border-white/10 bg-aviation-ink/55 p-4">
+            <div className="rounded-md border border-white/[0.08] bg-[#050c14]/70 p-4">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Curso atual</p>
               <h3 className="mt-2 text-lg font-semibold text-white">{structure.course.title}</h3>
               <p className="mt-2 text-sm text-slate-400">{structure.course.level}</p>
@@ -104,7 +104,7 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
                   <Link
                     key={module.id}
                     href={`/cursos/${structure.course.slug}`}
-                    className="focus-ring block rounded-md border border-white/10 bg-white/[0.035] p-4 transition hover:border-aviation-cyan/40"
+                    className="focus-ring block rounded-md border border-white/[0.08] bg-white/[0.028] p-4 transition hover:border-aviation-cyan/40"
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -120,7 +120,7 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
                 );
               })
             ) : (
-              <p className="rounded-md border border-white/10 bg-white/[0.035] p-4 text-sm text-slate-400">Todos os módulos disponíveis foram concluídos.</p>
+              <p className="rounded-md border border-white/[0.08] bg-white/[0.028] p-4 text-sm text-slate-400">Todos os módulos disponíveis foram concluídos.</p>
             )}
           </div>
         </Panel>
@@ -129,7 +129,7 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
           <SectionHeader eyebrow="Sequência de estudos" title="Próximas ações" />
           <ol className="space-y-3">
             {["Revisar a última aula", "Abrir a próxima aula liberada", "Praticar no simulador", "Registrar observações do estudo"].map((step, index) => (
-              <li key={step} className="flex gap-3 rounded-md border border-white/10 bg-white/[0.035] p-3">
+              <li key={step} className="flex gap-3 rounded-md border border-white/[0.08] bg-white/[0.028] p-3">
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-aviation-cyan/12 text-sm font-semibold text-aviation-cyan">{index + 1}</span>
                 <span className="text-sm leading-6 text-slate-300">{step}</span>
               </li>
@@ -168,7 +168,7 @@ function getCurrentLesson(lessons: LessonDocument[], lessonId?: string) {
 
 function InfoBox({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.035] p-3">
+    <div className="rounded-md border border-white/[0.08] bg-white/[0.028] p-3">
       <p className="text-slate-500">{label}</p>
       <p className="mt-1 font-semibold text-white">{value}</p>
     </div>

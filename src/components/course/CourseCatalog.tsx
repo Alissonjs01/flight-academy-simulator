@@ -53,14 +53,14 @@ export function CourseCatalog({ courses }: CourseCatalogProps) {
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 rounded-md border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[minmax(0,1fr)_12rem_12rem_12rem]">
+      <div className="grid gap-3 rounded-md border border-white/[0.08] bg-white/[0.028] p-4 md:grid-cols-[minmax(0,1fr)_12rem_12rem_12rem]">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Busca</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por curso, categoria ou descrição"
-            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white placeholder:text-slate-500"
+            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white placeholder:text-slate-500"
           />
         </label>
         <SelectFilter label="Categoria" value={category} values={categories} onChange={setCategory} />
@@ -69,7 +69,7 @@ export function CourseCatalog({ courses }: CourseCatalogProps) {
       </div>
 
       {filteredCourses.length ? (
-        <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           {filteredCourses.map((course) => (
             <CourseCard key={course.id} course={course} />
           ))}
@@ -96,7 +96,7 @@ function SelectFilter({ label, value, values, onChange, formatValue = (item) => 
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white"
+        className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white"
       >
         {values.map((item) => (
           <option key={item} value={item}>

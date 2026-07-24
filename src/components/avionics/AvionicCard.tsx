@@ -4,22 +4,21 @@ import type { AvionicDocument } from "@/features/avionics/types";
 import { getAvionicStudyStatusLabel } from "@/features/avionics/statusLabels";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { SafeImage } from "@/components/ui/SafeImage";
 
 export function AvionicCard({ avionic }: { avionic: AvionicDocument }) {
   return (
     <Link href={`/avionicos/${avionic.slug}`} className="focus-ring block h-full">
-      <Panel className="flex h-full flex-col overflow-hidden p-0 transition hover:border-aviation-cyan/45">
-        <div className="flex aspect-[16/9] items-center justify-center border-b border-white/10 bg-gradient-to-br from-slate-950 via-aviation-ink to-slate-800">
-          <div className="flex h-16 w-16 items-center justify-center rounded-md border border-aviation-cyan/25 bg-aviation-cyan/[0.08] text-aviation-cyan">
-            <Gauge className="h-8 w-8" />
+      <Panel className="group flex h-full flex-col overflow-hidden p-0 transition hover:border-aviation-cyan/45">
+        <div className="relative overflow-hidden border-b border-white/[0.08]">
+          <SafeImage src={avionic.image.url} alt={avionic.image.alt} className="aspect-[16/9] w-full object-cover opacity-85 transition duration-500 group-hover:scale-[1.03] group-hover:opacity-100" fallbackLabel={avionic.image.caption} />
+          <div className="absolute left-4 top-4 flex h-10 w-10 items-center justify-center rounded-md border border-aviation-cyan/25 bg-[#06111c]/80 text-aviation-cyan backdrop-blur">
+            <Gauge className="h-5 w-5" />
           </div>
         </div>
         <div className="flex flex-1 flex-col p-4">
           <div className="flex flex-wrap gap-2">
-            <span className="rounded-sm border border-white/10 bg-white/[0.04] px-2 py-1 text-xs font-semibold text-slate-300">{avionic.manufacturer}</span>
-            <span className="rounded-sm border border-aviation-mint/30 bg-aviation-mint/[0.08] px-2 py-1 text-xs font-semibold text-aviation-mint">
-              {getAvionicStudyStatusLabel(avionic.studyStatus)}
-            </span>
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-aviation-cyan">{avionic.manufacturer}</span>
           </div>
           <h3 className="mt-4 text-xl font-semibold text-white">{avionic.name}</h3>
           <p className="mt-1 text-sm text-slate-400">Versão {avionic.version}</p>
@@ -28,8 +27,8 @@ export function AvionicCard({ avionic }: { avionic: AvionicDocument }) {
             <ProgressBar value={avionic.progressPercent} label="Progresso de estudo" />
           </div>
           <div className="mt-auto flex items-center justify-between pt-5 text-sm font-semibold text-aviation-cyan">
-            <span>{avionic.publicationState === "published" ? "Publicado" : "Rascunho"}</span>
-            <ArrowRight className="h-4 w-4" />
+            <span>{getAvionicStudyStatusLabel(avionic.studyStatus)}</span>
+            <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
           </div>
         </div>
       </Panel>

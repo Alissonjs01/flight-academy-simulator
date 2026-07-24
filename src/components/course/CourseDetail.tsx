@@ -43,7 +43,7 @@ export function CourseDetail({ structure }: { structure: CourseStructure }) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
-      <Panel>
+      <Panel className="bg-white/[0.028]">
         <ProgressBar value={courseProgress.coursePercent} label="Progresso do curso" />
         <div className="mt-3 text-sm text-slate-400">
           {courseProgress.completedLessons} de {courseProgress.totalLessons} aula(s) concluída(s)
@@ -55,7 +55,7 @@ export function CourseDetail({ structure }: { structure: CourseStructure }) {
               const moduleProgress = calculateModuleProgress(module, orderedLessons, progress);
 
               return (
-                <div key={module.id} className="rounded-md border border-white/10 bg-white/[0.035] p-4">
+                <div key={module.id} className="rounded-md border border-white/[0.08] bg-white/[0.025] p-4">
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <h3 className="font-semibold text-white">{module.title}</h3>
@@ -98,7 +98,7 @@ export function CourseDetail({ structure }: { structure: CourseStructure }) {
                         );
                       })
                     ) : (
-                      <p className="rounded-md border border-white/10 bg-white/[0.03] p-3 text-sm text-slate-400">Nenhuma aula cadastrada neste módulo.</p>
+                      <p className="rounded-md border border-white/[0.08] bg-white/[0.025] p-3 text-sm text-slate-400">Nenhuma aula cadastrada neste módulo.</p>
                     )}
                   </div>
                 </div>
@@ -110,7 +110,7 @@ export function CourseDetail({ structure }: { structure: CourseStructure }) {
         </div>
       </Panel>
 
-      <Panel>
+      <Panel className="bg-white/[0.028]">
         <p className="text-xs uppercase tracking-[0.18em] text-slate-500">Resumo</p>
         <dl className="mt-4 space-y-4 text-sm">
           <SummaryItem label="Nível" value={structure.course.level} />

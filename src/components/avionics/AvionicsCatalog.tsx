@@ -31,14 +31,14 @@ export function AvionicsCatalog({ avionics }: { avionics: AvionicDocument[] }) {
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 rounded-md border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[minmax(0,1fr)_14rem_14rem]">
+      <div className="grid gap-3 rounded-md border border-white/[0.08] bg-white/[0.028] p-4 md:grid-cols-[minmax(0,1fr)_14rem_14rem]">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Busca</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por aviônico, fabricante ou versão"
-            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white placeholder:text-slate-500"
+            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white placeholder:text-slate-500"
           />
         </label>
         <SelectFilter label="Fabricante" value={manufacturer} values={manufacturers} onChange={setManufacturer} />
@@ -79,7 +79,7 @@ function SelectFilter({ label, value, values, onChange, formatValue = (item) => 
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white"
+        className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white"
       >
         {values.map((item) => (
           <option key={item} value={item}>

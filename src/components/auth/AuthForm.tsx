@@ -48,7 +48,7 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
   }
 
   return (
-    <Panel className="w-full max-w-md">
+    <Panel className="w-full max-w-md bg-white/[0.028]">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-aviation-cyan">Flight Academy Simulator</p>
       <h1 className="mt-3 text-2xl font-semibold text-white">{titleByMode[mode]}</h1>
       <p className="mt-2 text-sm leading-6 text-slate-400">{descriptionByMode[mode]}</p>
@@ -63,19 +63,19 @@ export function AuthForm({ mode }: { mode: AuthMode }) {
         {mode === "register" ? (
           <label className="block">
             <span className="text-sm font-semibold text-slate-300">Nome</span>
-            <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} required className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white" />
+            <input value={displayName} onChange={(event) => setDisplayName(event.target.value)} required className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white" />
           </label>
         ) : null}
 
         <label className="block">
           <span className="text-sm font-semibold text-slate-300">E-mail</span>
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white" />
+          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white" />
         </label>
 
         {mode !== "reset" ? (
           <label className="block">
             <span className="text-sm font-semibold text-slate-300">Senha</span>
-            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={6} className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white" />
+            <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={6} className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white" />
           </label>
         ) : null}
 

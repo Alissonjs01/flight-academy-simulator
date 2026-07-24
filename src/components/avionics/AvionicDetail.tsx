@@ -60,8 +60,8 @@ export function AvionicDetail({ profile }: AvionicDetailProps) {
         </div>
       </Panel>
 
-      <div className="rounded-md border border-white/10 bg-white/[0.035] p-2">
-        <div className="flex gap-2 overflow-x-auto">
+      <div className="border-b border-white/[0.08]">
+        <div className="tech-scrollbar flex gap-7 overflow-x-auto">
           {tabs.map((tab) => {
             const TabIcon = tab.icon;
 
@@ -71,12 +71,13 @@ export function AvionicDetail({ profile }: AvionicDetailProps) {
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={clsx(
-                  "focus-ring inline-flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold",
-                  activeTab === tab.id ? "bg-aviation-cyan text-aviation-ink" : "text-slate-300 hover:bg-white/[0.06] hover:text-white"
+                  "focus-ring relative inline-flex min-h-12 shrink-0 items-center gap-2 px-1 text-sm font-medium transition",
+                  activeTab === tab.id ? "text-aviation-cyan" : "text-slate-400 hover:text-white"
                 )}
               >
                 <TabIcon className="h-4 w-4" />
                 {tab.label}
+                <span className={clsx("absolute inset-x-0 bottom-0 h-0.5 rounded-full transition", activeTab === tab.id ? "bg-aviation-cyan shadow-[0_0_18px_rgba(57,215,255,0.75)]" : "bg-transparent")} />
               </button>
             );
           })}

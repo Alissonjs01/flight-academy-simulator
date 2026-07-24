@@ -1,31 +1,33 @@
 import {
-  BookOpen,
-  BookMarked,
-  Gauge,
-  LayoutDashboard,
-  ListChecks,
+  BadgeCheck,
+  BookOpenCheck,
+  ClipboardList,
+  Compass,
+  Cpu,
+  GaugeCircle,
+  LayoutGrid,
   Plane,
+  Radar,
   RadioTower,
   Route,
-  Settings,
+  Settings2,
   ShieldCheck,
   SlidersHorizontal,
-  Target,
-  TrendingUp
+  Target
 } from "lucide-react";
 import type { Aircraft, Avionic, Category, Checklist, Course, RouteItem, TrainingMission } from "@/types/academy";
 
 export const navigationItems: RouteItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Cursos", href: "/cursos", icon: BookOpen },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutGrid },
+  { label: "Cursos", href: "/cursos", icon: BookOpenCheck },
   { label: "Aeronaves", href: "/aeronaves", icon: Plane },
-  { label: "Aviônicos", href: "/avionicos", icon: Gauge },
-  { label: "Checklists", href: "/checklists", icon: ListChecks },
+  { label: "Aviônicos", href: "/avionicos", icon: Cpu },
+  { label: "Checklists", href: "/checklists", icon: ClipboardList },
   { label: "Treinamentos", href: "/treinamentos", icon: Target },
-  { label: "Progresso", href: "/progresso", icon: TrendingUp },
-  { label: "Revisão", href: "/revisao", icon: BookMarked },
+  { label: "Progresso", href: "/progresso", icon: GaugeCircle },
+  { label: "Revisão", href: "/revisao", icon: BadgeCheck },
   { label: "Admin", href: "/admin", icon: SlidersHorizontal },
-  { label: "Configurações", href: "/configuracoes", icon: Settings }
+  { label: "Configurações", href: "/configuracoes", icon: Settings2 }
 ];
 
 export const categories: Category[] = [

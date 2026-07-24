@@ -46,14 +46,14 @@ export function TrainingCenter({ trainings }: { trainings: TrainingDocument[] })
 
   return (
     <div className="space-y-5">
-      <div className="grid gap-3 rounded-md border border-white/10 bg-white/[0.035] p-4 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
+      <div className="grid gap-3 rounded-md border border-white/[0.08] bg-white/[0.028] p-4 md:grid-cols-[minmax(0,1fr)_12rem_12rem]">
         <label className="block">
           <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Busca</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Buscar por treinamento, aeronave ou objetivo"
-            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white placeholder:text-slate-500"
+            className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white placeholder:text-slate-500"
           />
         </label>
         <SelectFilter label="Dificuldade" value={difficulty} values={difficulties} onChange={(value) => setDifficulty(value as TrainingDifficulty | typeof allOption)} />
@@ -103,8 +103,8 @@ function TrainingCard({ training, onRecordSaved }: { training: TrainingDocument;
         <div>
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="rounded-sm border border-aviation-cyan/25 bg-aviation-cyan/[0.08] px-2 py-1 font-semibold text-aviation-cyan">{training.difficulty}</span>
-            <span className="rounded-sm border border-white/10 bg-white/[0.04] px-2 py-1 text-slate-300">{training.duration}</span>
-            <span className="rounded-sm border border-white/10 bg-white/[0.04] px-2 py-1 text-slate-300">{trainingStatusLabels[record.status]}</span>
+            <span className="rounded-sm border border-white/[0.08] bg-white/[0.035] px-2 py-1 text-slate-300">{training.duration}</span>
+            <span className="rounded-sm border border-white/[0.08] bg-white/[0.035] px-2 py-1 text-slate-300">{trainingStatusLabels[record.status]}</span>
           </div>
           <h3 className="mt-4 text-xl font-semibold text-white">{training.title}</h3>
           <p className="mt-2 text-sm text-slate-400">{training.aircraftName}</p>
@@ -116,7 +116,7 @@ function TrainingCard({ training, onRecordSaved }: { training: TrainingDocument;
         <Spec label="Origem" value={training.departureAirport} />
         <Spec label="Destino" value={training.destinationAirport} />
       </div>
-      <div className="mt-3 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-slate-300">
+      <div className="mt-3 rounded-md border border-white/[0.08] bg-white/[0.028] p-3 text-sm leading-6 text-slate-300">
         {training.conditions}
       </div>
       <TechnicalMetadataSummary metadata={training.technicalMetadata} compact />
@@ -139,7 +139,7 @@ function TrainingCard({ training, onRecordSaved }: { training: TrainingDocument;
             value={studentReport}
             onChange={(event) => setStudentReport(event.target.value)}
             rows={4}
-            className="focus-ring mt-2 w-full rounded-md border border-white/10 bg-aviation-ink/60 p-3 text-sm leading-6 text-white placeholder:text-slate-500"
+            className="focus-ring mt-2 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 p-3 text-sm leading-6 text-white placeholder:text-slate-500"
             placeholder="Registre o que aconteceu no treino."
           />
         </label>
@@ -149,7 +149,7 @@ function TrainingCard({ training, onRecordSaved }: { training: TrainingDocument;
             value={personalNote}
             onChange={(event) => setPersonalNote(event.target.value)}
             rows={4}
-            className="focus-ring mt-2 w-full rounded-md border border-white/10 bg-aviation-ink/60 p-3 text-sm leading-6 text-white placeholder:text-slate-500"
+            className="focus-ring mt-2 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 p-3 text-sm leading-6 text-white placeholder:text-slate-500"
             placeholder="Anote ajustes para repetir depois."
           />
         </label>
@@ -161,11 +161,11 @@ function TrainingCard({ training, onRecordSaved }: { training: TrainingDocument;
           Salvar registro
         </button>
         <div className="flex flex-wrap gap-2">
-          <Link href={`/cursos/${training.relatedCourseSlug}`} className="focus-ring rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">
+          <Link href={`/cursos/${training.relatedCourseSlug}`} className="focus-ring rounded-md border border-white/[0.08] bg-white/[0.035] px-3 py-2 text-sm font-semibold text-white">
             Curso
           </Link>
           {training.relatedLessonSlug ? (
-            <Link href={`/aulas/${training.relatedLessonSlug}`} className="focus-ring rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white">
+            <Link href={`/aulas/${training.relatedLessonSlug}`} className="focus-ring rounded-md border border-white/[0.08] bg-white/[0.035] px-3 py-2 text-sm font-semibold text-white">
               Aula
             </Link>
           ) : null}
@@ -196,7 +196,7 @@ function StatusButton({
       onClick={() => onClick(status)}
       className={clsx(
         "focus-ring inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold",
-        currentStatus === status ? "border-aviation-cyan bg-aviation-cyan text-aviation-ink" : "border-white/10 bg-white/5 text-white"
+        currentStatus === status ? "border-aviation-cyan bg-aviation-cyan text-aviation-ink" : "border-white/[0.08] bg-white/[0.035] text-white"
       )}
     >
       <Icon className="h-4 w-4" />
@@ -220,7 +220,7 @@ function ListBlock({ title, items }: { title: string; items: string[] }) {
 
 function Spec({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-md border border-white/10 bg-white/[0.035] p-3">
+    <div className="rounded-md border border-white/[0.08] bg-white/[0.028] p-3">
       <p className="text-xs uppercase tracking-[0.14em] text-slate-500">{label}</p>
       <p className="mt-2 text-sm font-semibold leading-6 text-white">{value}</p>
     </div>
@@ -242,7 +242,7 @@ function SelectFilter({ label, value, values, onChange, formatValue = (item) => 
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="focus-ring mt-2 h-11 w-full rounded-md border border-white/10 bg-aviation-ink/60 px-3 text-sm text-white"
+        className="focus-ring mt-2 h-11 w-full rounded-md border border-white/[0.08] bg-[#050c14]/80 px-3 text-sm text-white"
       >
         {values.map((item) => (
           <option key={item} value={item}>

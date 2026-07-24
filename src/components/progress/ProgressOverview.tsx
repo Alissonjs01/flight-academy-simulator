@@ -16,14 +16,14 @@ export function ProgressOverview({ structures }: { structures: CourseStructure[]
   }, [allLessons]);
 
   return (
-    <Panel>
+    <Panel className="bg-white/[0.028]">
       <div className="space-y-6">
         {structures.map((structure) => {
           const lessons = structure.modules.flatMap((module) => module.lessons);
           const summary = calculateCourseProgress(lessons, progress);
 
           return (
-            <div key={structure.course.id} className="rounded-md border border-white/10 bg-white/[0.035] p-4">
+            <div key={structure.course.id} className="rounded-md border border-white/[0.08] bg-white/[0.025] p-4">
               <ProgressBar value={summary.coursePercent} label={structure.course.title} />
               <div className="mt-4 space-y-3">
                 {structure.modules.length ? (
