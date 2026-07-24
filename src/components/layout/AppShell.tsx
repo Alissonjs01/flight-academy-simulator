@@ -120,7 +120,7 @@ function AppFrame({ children }: Readonly<{ children: ReactNode }>) {
 }
 
 function UserMenu() {
-  const { user, profile } = useAuth();
+  const { user, profile, profileError, isProfileLoading } = useAuth();
   const [isProfileOpen, setProfileOpen] = useState(false);
   const totalPublishedLessons = useMemo(() => localLessonDocuments.filter((lesson) => lesson.publicationState === "published").length, []);
   const [stats, setStats] = useState<UserProfileStats>(() => createEmptyUserProfileStats(totalPublishedLessons));
@@ -169,7 +169,15 @@ function UserMenu() {
       >
         <LogOut className="h-4 w-4" />
       </button>
-      <UserProfileModal isOpen={isProfileOpen} onClose={() => setProfileOpen(false)} user={user} profile={profile} stats={stats} />
+      <UserProfileModal
+        isOpen={isProfileOpen}
+        onClose={() => setProfileOpen(false)}
+        user={user}
+        profile={profile}
+        stats={stats}
+        profileError={profileError}
+        isProfileLoading={isProfileLoading}
+      />
     </div>
   );
 }

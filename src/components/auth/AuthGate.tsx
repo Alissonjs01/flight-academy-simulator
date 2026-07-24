@@ -14,7 +14,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, role, isLoading, isConfigured, authError, profileError } = useAuth();
+  const { user, role, isLoading, isConfigured, authError } = useAuth();
   const isPublicPath = publicPaths.has(pathname);
   const isAuthPath = authPaths.has(pathname);
   const next = searchParams.get("next") ?? "/dashboard";
@@ -61,11 +61,6 @@ export function AuthGate({ children }: { children: ReactNode }) {
       {authError ? (
         <div className="mx-auto mb-4 max-w-5xl rounded-md border border-red-400/30 bg-red-500/[0.06] p-3 text-sm text-red-100">
           {authError}
-        </div>
-      ) : null}
-      {profileError ? (
-        <div className="mx-auto mb-4 max-w-5xl rounded-md border border-aviation-amber/30 bg-aviation-amber/[0.08] p-3 text-sm text-slate-200">
-          {profileError}
         </div>
       ) : null}
       {children}

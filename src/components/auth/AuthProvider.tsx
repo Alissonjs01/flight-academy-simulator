@@ -87,10 +87,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           ensuredProfile = await ensureStudentProfile(nextUser);
         } catch (profileLoadError) {
-          setProfile(undefined);
-          setRole(null);
-          setProfileError(getFirebaseDataErrorMessage(profileLoadError));
-          return;
+          const fallbackProfile = createFallbackStudentProfile(nextUser);
+          ensuredProfile = fallbackProfile;
+          setProfile(fallbackProfile);
+          setRole("student");
+          setProfileError(buildProfileFallbackMessage(profileLoadError));
         }
 
         const token = await nextUser.getIdTokenResult();
@@ -113,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         } catch (privateDataError) {
-          setProfileError(`${getFirebaseDataErrorMessage(privateDataError)} Seu login foi mantido, mas alguns dados de progresso podem não ter sido carregados.`);
+          setProfileError(buildPrivateDataFallbackMessage(privateDataError));
         }
       } catch (authError) {
         setAuthError(getFirebaseAuthErrorMessage(authError));
@@ -141,6 +142,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   return useContext(AuthContext);
+}
+
+function createFallbackStudentProfile(user: User): StudentProfileDocument {
+  const timestamp = new Date().toISOString();
+
+  return {
+    uid: user.uid,
+    displayName: user.displayName || "Aluno",
+    email: user.email ?? "",
+    photoURL: user.photoURL ?? undefined,
+    role: "student",
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    lastLoginAt: timestamp,
+    migrationCompleted: true,
+    onboardingCompleted: false
+  };
+}
+
+function buildProfileFallbackMessage(error: unknown) {
+  const detail = normalizeFirebaseDataDetail(getFirebaseDataErrorMessage(error));
+  return `O perfil remoto não pôde ser carregado agora. A sessão continua ativa com dados locais. Detalhe: ${detail}`;
+}
+
+function buildPrivateDataFallbackMessage(error: unknown) {
+  const detail = normalizeFirebaseDataDetail(getFirebaseDataErrorMessage(error));
+  return `Alguns dados remotos de progresso não puderam ser carregados agora. O login foi mantido e a plataforma usará o fallback local quando disponível. Detalhe: ${detail}`;
+}
+
+function normalizeFirebaseDataDetail(message: string) {
+  return message === "Não foi possível acessar os dados no Firebase." ? "falha recuperável de leitura no Firestore." : message;
 }
 
 function LocalMigrationPanel({ uid, summary, onDone, onProfileUpdated }: { uid: string; summary: LocalMigrationSummary; onDone: () => void; onProfileUpdated: () => void }) {

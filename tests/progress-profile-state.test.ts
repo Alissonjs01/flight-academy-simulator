@@ -86,9 +86,9 @@ describe("estado de autenticação e modal de perfil", () => {
     expect(provider).toContain("authError");
     expect(provider).toContain("profileError");
     expect(provider).toContain("setAuthError(undefined)");
-    expect(provider).toContain("setProfileError(getFirebaseDataErrorMessage");
+    expect(provider).toContain("createFallbackStudentProfile");
     expect(gate).toContain("{authError ?");
-    expect(gate).toContain("{profileError ?");
+    expect(gate).not.toContain("{profileError ?");
   });
 
   it("abre o popup pelo menu do usuário e apresenta estados vazios neutros", () => {
@@ -97,6 +97,9 @@ describe("estado de autenticação e modal de perfil", () => {
 
     expect(shell).toContain("setProfileOpen(true)");
     expect(shell).toContain("UserProfileModal");
+    expect(modal).toContain("onMouseDown={onClose}");
+    expect(modal).toContain("event.key === \"Escape\"");
+    expect(modal).toContain("document.body.style.overflow = \"hidden\"");
     expect(modal).toContain("Ainda não informado");
     expect(modal).toContain("Nenhum curso iniciado");
     expect(modal).toContain("Fechar perfil");

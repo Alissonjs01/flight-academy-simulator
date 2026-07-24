@@ -3,6 +3,7 @@
 import { BarChart3, BookOpen, CalendarClock, CheckCircle2, ClipboardCheck, Mail, RotateCcw, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { User } from "firebase/auth";
+import { useEffect } from "react";
 import type { StudentProfileDocument } from "@/features/auth/types";
 import type { UserProfileStats } from "@/services/userProfileStatsService";
 import { UserAvatar } from "@/components/ui/SafeImage";
@@ -13,9 +14,33 @@ type UserProfileModalProps = {
   user: User;
   profile?: StudentProfileDocument;
   stats: UserProfileStats;
+  profileError?: string;
+  isProfileLoading?: boolean;
 };
 
-export function UserProfileModal({ isOpen, onClose, user, profile, stats }: UserProfileModalProps) {
+export function UserProfileModal({ isOpen, onClose, user, profile, stats, profileError, isProfileLoading = false }: UserProfileModalProps) {
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) {
     return null;
   }
@@ -24,8 +49,17 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats }: User
   const email = profile?.email || user.email || "Ainda não informado";
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/65 px-3 py-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="profile-modal-title">
-      <div className="w-full max-w-2xl rounded-md border border-white/10 bg-aviation-ink shadow-2xl">
+    <div
+      className="fixed inset-0 z-[70] flex items-end justify-center bg-black/65 px-3 py-4 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="profile-modal-title"
+      onMouseDown={onClose}
+    >
+      <div
+        className="w-full max-w-2xl rounded-md border border-white/10 bg-aviation-ink shadow-2xl"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
         <div className="flex items-start justify-between gap-4 border-b border-white/10 p-4 sm:p-5">
           <div className="flex min-w-0 items-center gap-3">
             <UserAvatar
@@ -47,6 +81,16 @@ export function UserProfileModal({ isOpen, onClose, user, profile, stats }: User
         </div>
 
         <div className="max-h-[min(78vh,42rem)] overflow-y-auto p-4 sm:p-5">
+          {profileError ? (
+            <div className="mb-4 rounded-md border border-aviation-amber/30 bg-aviation-amber/[0.08] p-3 text-sm leading-6 text-slate-200">
+              {profileError}
+            </div>
+          ) : null}
+          {isProfileLoading ? (
+            <div className="mb-4 rounded-md border border-white/10 bg-white/[0.035] p-3 text-sm leading-6 text-slate-300">
+              Atualizando dados do perfil...
+            </div>
+          ) : null}
           <div className="grid gap-3 sm:grid-cols-2">
             <ProfileInfo icon={CalendarClock} label="Criado em" value={formatDate(profile?.createdAt)} />
             <ProfileInfo icon={RotateCcw} label="Último acesso" value={formatDate(profile?.lastLoginAt)} />
