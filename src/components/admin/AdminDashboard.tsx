@@ -26,6 +26,7 @@ import type { AdminAuditLogDocument, AdminContentPayload, AdminContentSummary, A
 import { slugifyTitle } from "@/features/admin/validation";
 import { classificationLabels, verificationStatusLabels } from "@/features/technical/defaults";
 import type { ContentClassification, SourceType, VerificationStatus } from "@/features/technical/types";
+import { isFirebaseStorageEnabled } from "@/lib/firebase/config";
 import {
   archiveAdminContent,
   completeAdminUpload,
@@ -403,6 +404,7 @@ function AdminForm({
   const [isDirty, setIsDirty] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | undefined>();
   const [uploadError, setUploadError] = useState<string | undefined>();
+  const storageEnabled = isFirebaseStorageEnabled();
 
   useEffect(() => {
     if (!isDirty) {
@@ -492,12 +494,20 @@ function AdminForm({
                 {config.uploadFolder ? (
                   <Panel>
                     <p className="text-sm font-semibold text-white">Imagem</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">JPG, PNG ou WebP. O arquivo será enviado para uma pasta de Storage vinculada a este conteúdo.</p>
-                    <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-white/15 bg-white/[0.035] px-4 py-5 text-sm font-semibold text-slate-200">
-                      <Upload className="h-4 w-4 text-aviation-cyan" />
-                      Enviar imagem
-                      <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void handleUpload(event)} className="sr-only" />
-                    </label>
+                    {storageEnabled ? (
+                      <>
+                        <p className="mt-1 text-xs leading-5 text-slate-400">JPG, PNG ou WebP. O arquivo será enviado para uma pasta de Storage vinculada a este conteúdo.</p>
+                        <label className="mt-4 flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-white/15 bg-white/[0.035] px-4 py-5 text-sm font-semibold text-slate-200">
+                          <Upload className="h-4 w-4 text-aviation-cyan" />
+                          Enviar imagem
+                          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => void handleUpload(event)} className="sr-only" />
+                        </label>
+                      </>
+                    ) : (
+                      <div className="mt-3 rounded-md border border-aviation-amber/25 bg-aviation-amber/[0.06] p-3 text-xs leading-5 text-aviation-amber">
+                        Uploads estão desativados no modo sem custos. Salve o conteúdo sem imagem por enquanto; quando o Storage for ativado, basta definir `NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE=true`.
+                      </div>
+                    )}
                     {uploadProgress !== undefined ? <p className="mt-3 text-sm text-aviation-cyan">Upload: {uploadProgress}%</p> : null}
                     {uploadError ? <p className="mt-3 text-sm text-aviation-amber">{uploadError}</p> : null}
                   </Panel>

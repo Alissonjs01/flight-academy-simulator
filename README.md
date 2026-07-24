@@ -24,13 +24,21 @@ http://localhost:3000
 
 ## Estado atual
 
-Esta versao esta pronta para testes locais e com Firebase Emulator Suite. Ela ainda nao esta conectada a um projeto Firebase real, nao possui `.firebaserc`, nao possui `.env.local` real e nao possui remote GitHub configurado.
+Esta versao esta pronta para testes locais, Firebase Emulator Suite e conexao inicial ao projeto Firebase real do proprietario. O repositorio remoto GitHub tambem ja pode ser usado quando configurado localmente.
+
+Modo sem custos atual:
+
+- Firebase Authentication: pode ser usado no plano gratis.
+- Cloud Firestore: pode ser usado no plano gratis, respeitando cotas do Firebase.
+- Firebase Storage: permanece preparado no codigo, mas desativado por padrao porque pode exigir upgrade de plano.
+- Firebase Hosting/App Hosting: nao foi implantado nesta etapa.
+- Seeds em projeto real: devem ser executados somente com confirmacao explicita.
 
 Funcionalidades reais no codigo:
 
 - Firebase Authentication implementado para cadastro, login, logout e recuperacao de senha.
 - Firestore implementado para perfis, progresso, tentativas, revisoes e conteudo quando configurado.
-- Storage implementado para imagens permitidas.
+- Storage preparado para imagens permitidas, mas desligado por padrao no modo sem custos.
 - Security Rules e testes automatizados.
 - Painel administrativo protegido por papeis.
 - PWA com manifest, service worker, tela offline e configuracoes.
@@ -39,7 +47,7 @@ Funcionalidades que ainda dependem de configuracao externa:
 
 - Login em Firebase real.
 - Firestore real.
-- Storage real.
+- Storage real, somente se voce decidir ativar esse servico no Firebase.
 - Primeiro administrador real.
 - Seed em projeto real.
 - GitHub remoto.
@@ -56,6 +64,7 @@ npm run emulators
 npm run test:pwa
 npm run test:rules
 npm run test:firebase
+npm run deploy:firestore
 npm run lint
 npm run typecheck
 npm run build
@@ -87,7 +96,7 @@ npm run build
 - Repositorios locais e Firestore preparados por camada de servicos.
 - Progresso, tentativas e revisoes salvos localmente quando Firebase nao esta configurado e sincronizados com Firestore quando ha usuario autenticado.
 - Metadados de fidelidade tecnica, fonte, variante, status de verificacao e revisao preparados nos modelos de conteudo tecnico.
-- Firebase Authentication, Firestore, Storage, Security Rules e Emulator Suite implementados.
+- Firebase Authentication, Firestore, Security Rules e Emulator Suite implementados. Storage fica preparado para ativacao futura.
 - Painel administrativo funcional para gestao gradual de conteudos.
 - Progressive Web App instalavel com estrategia conservadora de cache.
 
@@ -158,20 +167,20 @@ users/{userId}/reviewItems/{reviewItemId}
 
 Para migrar, crie uma implementacao Firebase das interfaces em `src/features/content/repositories/contentRepository.ts` e substitua o repositorio usado pelos servicos em `src/services`. O progresso, tentativas, respostas e revisoes locais de `localStorage` devem virar documentos por usuario, protegidos por Firebase Authentication e Firebase Security Rules.
 
-O Firebase Storage deve ser usado para imagens de cursos, anexos de aulas, PDFs, videos e materiais de checklist.
+O Firebase Storage deve ser usado futuramente para imagens de cursos, anexos de aulas, PDFs, videos e materiais de checklist, mas ele fica desativado no modo sem custos atual.
 
 Veja tambem `docs/firebase-migration.md`.
 
 ## Firebase
 
-Esta etapa prepara e integra Firebase Authentication, Cloud Firestore, Firebase Storage, Security Rules e Emulator Suite. A configuracao publica do SDK web fica em `.env.local`; credenciais privadas, contas de servico e JSONs administrativos nao devem ser versionados.
+Esta etapa prepara e integra Firebase Authentication, Cloud Firestore, Security Rules e Emulator Suite. Firebase Storage esta preparado no codigo e nas regras, mas desativado por padrao para manter a plataforma no modo sem custos. A configuracao publica do SDK web fica em `.env.local`; credenciais privadas, contas de servico e JSONs administrativos nao devem ser versionados.
 
 ### Criar o projeto Firebase
 
 1. No Console do Firebase, crie um projeto.
 2. Ative Authentication com provedor E-mail/senha.
 3. Crie o banco Cloud Firestore.
-4. Ative Firebase Storage.
+4. Nao ative Firebase Storage se quiser permanecer sem custos.
 5. Registre um app Web e copie as configuracoes publicas do SDK.
 6. Crie `.env.local` com base em `.env.example`.
 
@@ -184,12 +193,15 @@ NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
 NEXT_PUBLIC_FIREBASE_APP_ID=...
 NEXT_PUBLIC_USE_FIREBASE_EMULATORS=false
 NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE=local
+NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE=false
 NEXT_PUBLIC_ENABLE_PWA_IN_DEV=false
 FIREBASE_PROJECT_ID=...
 CONFIRM_REAL_FIREBASE_SEED=
 ```
 
 `NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE=local` mantem os Server Components usando conteudo local. Use `firestore` somente quando houver uma estrategia de leitura autenticada no servidor ou paginas de conteudo client-side. Os dados privados do aluno ja sao gravados no Firestore quando o usuario esta autenticado.
+
+`NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE=false` mantem uploads desativados. Use `true` somente depois de ativar Storage no projeto Firebase e publicar `storage.rules`.
 
 ### Comandos
 
@@ -198,6 +210,7 @@ npm run dev
 npm run emulators
 npm run seed:emulator
 npm run seed:firebase
+npm run deploy:firestore
 npm run test:rules
 npm run lint
 npm run typecheck
@@ -247,10 +260,16 @@ As regras ficam em:
 
 Os indices ficam em `firestore.indexes.json`.
 
-Para aplicar em um projeto real:
+Para aplicar Firestore em um projeto real sem ativar Storage:
 
 ```bash
-firebase deploy --only firestore:rules,firestore:indexes,storage
+firebase deploy --only firestore:rules,firestore:indexes
+```
+
+Quando e somente quando Storage estiver ativo no seu Firebase, publique tambem:
+
+```bash
+firebase deploy --only storage
 ```
 
 ### Erros comuns

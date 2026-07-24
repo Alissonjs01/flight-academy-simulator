@@ -15,6 +15,7 @@ export type FirebaseConfigStatus = {
   config?: FirebaseOptions;
   useEmulators: boolean;
   useFirestoreContent: boolean;
+  useStorage: boolean;
 };
 
 export function getFirebaseConfigStatus(): FirebaseConfigStatus {
@@ -35,7 +36,8 @@ export function getFirebaseConfigStatus(): FirebaseConfigStatus {
           }
         : undefined,
     useEmulators: allowEmulators && process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATORS === "true",
-    useFirestoreContent: process.env.NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE === "firestore"
+    useFirestoreContent: process.env.NEXT_PUBLIC_FIREBASE_CONTENT_SOURCE === "firestore",
+    useStorage: process.env.NEXT_PUBLIC_ENABLE_FIREBASE_STORAGE === "true"
   };
 }
 
@@ -47,6 +49,10 @@ export function assertFirebaseConfigured() {
   }
 
   return status.config;
+}
+
+export function isFirebaseStorageEnabled() {
+  return getFirebaseConfigStatus().useStorage;
 }
 
 function toEnvKey(key: string) {

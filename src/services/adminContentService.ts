@@ -34,6 +34,7 @@ import type {
 } from "@/features/admin/types";
 import { validateAdminPayload } from "@/features/admin/validation";
 import { getFirebaseAuth, getFirebaseDb, getFirebaseStorage } from "@/lib/firebase/client";
+import { isFirebaseStorageEnabled } from "@/lib/firebase/config";
 import { getFirebaseDataErrorMessage } from "@/lib/firebase/errors";
 
 type AdminContext = {
@@ -312,6 +313,10 @@ export async function deleteAdminContent(entityType: AdminEntityType, id: string
 }
 
 export function uploadAdminImage(entityType: AdminEntityType, entityId: string, file: File, alt: string, onProgress: (progress: number) => void): UploadTask {
+  if (!isFirebaseStorageEnabled()) {
+    throw new Error("Uploads estão desativados no modo sem custos. O conteúdo pode ser salvo sem imagem e o Storage pode ser ativado futuramente.");
+  }
+
   const config = adminEntityConfigs[entityType];
 
   if (!config.uploadFolder) {
@@ -342,6 +347,10 @@ export function uploadAdminImage(entityType: AdminEntityType, entityId: string, 
 }
 
 export async function completeAdminUpload(entityType: AdminEntityType, entityId: string, task: UploadTask, alt: string): Promise<AdminUploadResult> {
+  if (!isFirebaseStorageEnabled()) {
+    throw new Error("Uploads estão desativados no modo sem custos.");
+  }
+
   const context = await getAdminContext();
   const config = adminEntityConfigs[entityType];
   const uploadSnapshot = await task;
@@ -359,6 +368,10 @@ export async function completeAdminUpload(entityType: AdminEntityType, entityId:
 }
 
 export async function deleteAdminStorageFile(storagePath: string) {
+  if (!isFirebaseStorageEnabled()) {
+    throw new Error("Firebase Storage está desativado neste ambiente.");
+  }
+
   await deleteObject(ref(getFirebaseStorage(), storagePath));
 }
 

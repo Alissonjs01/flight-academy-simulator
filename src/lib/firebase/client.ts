@@ -2,7 +2,7 @@ import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { connectAuthEmulator, getAuth, type Auth } from "firebase/auth";
 import { connectFirestoreEmulator, getFirestore, type Firestore } from "firebase/firestore";
 import { connectStorageEmulator, getStorage, type FirebaseStorage } from "firebase/storage";
-import { assertFirebaseConfigured, getFirebaseConfigStatus } from "@/lib/firebase/config";
+import { assertFirebaseConfigured, getFirebaseConfigStatus, isFirebaseStorageEnabled } from "@/lib/firebase/config";
 
 let authEmulatorConnected = false;
 let firestoreEmulatorConnected = false;
@@ -30,6 +30,10 @@ export function getFirebaseDb(): Firestore {
 }
 
 export function getFirebaseStorage(): FirebaseStorage {
+  if (!isFirebaseStorageEnabled()) {
+    throw new Error("Firebase Storage está desativado neste ambiente para manter o projeto sem custos. Ative somente quando o Storage estiver configurado no seu projeto Firebase.");
+  }
+
   const storage = getStorage(getFirebaseApp());
   connectEmulators(undefined, undefined, storage);
   return storage;

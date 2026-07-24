@@ -1,10 +1,12 @@
 import { deleteObject, getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { getFirebaseStorage } from "@/lib/firebase/client";
+import { isFirebaseStorageEnabled } from "@/lib/firebase/config";
 
 const maxProfilePhotoBytes = 2 * 1024 * 1024;
 const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function uploadProfilePhoto(uid: string, file: File) {
+  assertStorageEnabled();
   validateImageFile(file, maxProfilePhotoBytes);
   const extension = getSafeImageExtension(file.type);
   const objectRef = ref(getFirebaseStorage(), `profilePhotos/${uid}/avatar.${extension}`);
@@ -13,6 +15,7 @@ export async function uploadProfilePhoto(uid: string, file: File) {
 }
 
 export async function deleteProfilePhoto(uid: string) {
+  assertStorageEnabled();
   await deleteObject(ref(getFirebaseStorage(), `profilePhotos/${uid}/avatar.jpg`));
 }
 
@@ -35,6 +38,12 @@ function validateImageFile(file: File, maxBytes: number) {
 
   if (file.size > maxBytes) {
     throw new Error("Arquivo maior que o limite permitido.");
+  }
+}
+
+function assertStorageEnabled() {
+  if (!isFirebaseStorageEnabled()) {
+    throw new Error("Uploads de imagem estão desativados no modo sem custos.");
   }
 }
 
