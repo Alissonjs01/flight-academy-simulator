@@ -55,14 +55,15 @@ const c408TrainingMetadata = trainingExerciseMetadata({
   simulatorAdaptationNotes: "Treinamento didático para simulador; não representa procedimento aeronáutico oficial."
 });
 
-function mainImage(aircraftId: string, slug: string, alt: string): AircraftMediaReference {
+function mainImage(aircraftId: string, slug: string, alt: string, url?: string, caption = "Imagem validada ainda não vinculada. Esta etapa preserva o estudo textual sem usar mídia sem licença."): AircraftMediaReference {
   return {
     id: `media-${slug}-main`,
     aircraftId,
     kind: "main",
     alt,
     storagePath: `aircraft/${slug}/main.jpg`,
-    caption: "Imagem validada ainda não vinculada. Esta etapa preserva o estudo textual sem usar mídia sem licença.",
+    url,
+    caption,
     publicationState: "published",
     createdAt,
     updatedAt
@@ -85,7 +86,13 @@ export const localAircraftDocuments: AircraftDocument[] = [
     capacity: "Versão passageiros: até 19 ocupantes e 5.000 lb de payload máximo publicado. Versão cargueira: 2 ocupantes e até 6.000 lb de carga/payload publicado.",
     description:
       "O Cessna 408 SkyCourier é um bimotor turboélice utilitário de asa alta, trem fixo e grande cabine, desenvolvido pela Textron Aviation para transporte regional de carga, passageiros e missões especiais. A aeronave real existe nas configurações cargueira, passageiros e combi, com motores PT6A-65SC, hélices McCauley C779 de quatro pás, aviônicos Garmin G1000 NXi e foco em alta utilização, carregamento rápido e operação regional. Na plataforma, o C408 é a única aeronave visível ao aluno e serve como referência prática para estudar preparação, cockpit, taxi, decolagem, subida, cruzeiro, descida, aproximação, pouso, arremetida e limitações do simulador. O modelo local identificado é Microsoft/Carenado no Microsoft Flight Simulator; a variante exata, versão do add-on e profundidade de sistemas não estão registradas no repositório e devem ser confirmadas no simulador instalado.",
-    mainImage: mainImage("aircraft-cessna-408-skycourier", "cessna-408-skycourier", "Cessna 408 SkyCourier em estudo no simulador"),
+    mainImage: mainImage(
+      "aircraft-cessna-408-skycourier",
+      "cessna-408-skycourier",
+      "Cessna 408 SkyCourier em pátio com montanhas ao fundo",
+      "/images/aircraft/c408/overview.png",
+      "Imagem ilustrativa fornecida para a plataforma."
+    ),
     gallery: [],
     studyStatus: "current",
     progressPercent: 28,
