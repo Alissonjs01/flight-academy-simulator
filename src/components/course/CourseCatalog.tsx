@@ -1,37 +1,49 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import type { CourseDocument, LearningLevel, LearningStatus } from "@/features/content/types";
+import type { CourseDocument, CourseStructure, LearningLevel, LearningStatus } from "@/features/content/types";
 import { learningStatusLabels } from "@/features/content/statusLabels";
-import { readUnlockedCourseIds } from "@/services/progressService";
+import { calculateCourseProgress, getUnlockedCourseIdsFromProgress, readLocalProgress, subscribeToProgressChanges } from "@/services/progressService";
 import { CourseCard } from "@/components/course/CourseCard";
 import { EmptyState } from "@/components/ui/StateMessage";
 
 type CourseCatalogProps = {
   courses: CourseDocument[];
+  structures: CourseStructure[];
 };
 
 const allOption = "Todos";
 
-export function CourseCatalog({ courses }: CourseCatalogProps) {
+export function CourseCatalog({ courses, structures }: CourseCatalogProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState(allOption);
   const [level, setLevel] = useState<LearningLevel | typeof allOption>(allOption);
   const [status, setStatus] = useState<LearningStatus | typeof allOption>(allOption);
-  const [unlockedCourseIds, setUnlockedCourseIds] = useState<string[]>([]);
+  const allLessons = useMemo(() => structures.flatMap((structure) => structure.modules.flatMap((module) => module.lessons)), [structures]);
+  const [progress, setProgress] = useState(() => readLocalProgress(allLessons));
 
   useEffect(() => {
-    setUnlockedCourseIds(readUnlockedCourseIds());
-  }, []);
+    const refreshProgress = () => setProgress(readLocalProgress(allLessons));
+    refreshProgress();
+    return subscribeToProgressChanges(refreshProgress);
+  }, [allLessons]);
 
-  const displayCourses = useMemo(
-    () =>
-      courses.map((course) => ({
+  const displayCourses = useMemo(() => {
+    const unlockedCourseIds = getUnlockedCourseIdsFromProgress(structures, progress);
+
+    return courses.map((course) => {
+      const structure = structures.find((item) => item.course.id === course.id);
+      const summary = structure ? calculateCourseProgress(structure.modules.flatMap((module) => module.lessons), progress) : undefined;
+      const isCompleted = Boolean(summary && summary.totalLessons > 0 && summary.completedLessons === summary.totalLessons);
+      const isUnlocked = unlockedCourseIds.includes(course.id);
+
+      return {
         ...course,
-        status: course.status === "locked" && unlockedCourseIds.includes(course.id) ? ("not_started" as const) : course.status
-      })),
-    [courses, unlockedCourseIds]
-  );
+        progressPercent: summary?.coursePercent ?? course.progressPercent,
+        status: isCompleted ? ("completed" as const) : !isUnlocked ? ("locked" as const) : course.status === "locked" ? ("not_started" as const) : course.status
+      };
+    });
+  }, [courses, progress, structures]);
 
   const categories = useMemo(() => [allOption, ...Array.from(new Set(displayCourses.map((course) => course.category)))], [displayCourses]);
   const levels = useMemo(() => [allOption, ...Array.from(new Set(displayCourses.map((course) => course.level)))], [displayCourses]);

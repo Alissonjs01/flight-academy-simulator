@@ -10,26 +10,29 @@ import {
   calculateCourseProgress,
   calculateModuleProgress,
   getLessonProgressStates,
-  isCourseUnlocked,
+  isCourseUnlockedFromProgress,
   readLocalProgress,
-  setCurrentLesson
+  setCurrentLesson,
+  subscribeToProgressChanges
 } from "@/services/progressService";
 import { EmptyState } from "@/components/ui/StateMessage";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
-export function CourseDetail({ structure }: { structure: CourseStructure }) {
+export function CourseDetail({ structure, structures }: { structure: CourseStructure; structures: CourseStructure[] }) {
   const orderedLessons = useMemo(() => structure.modules.flatMap((module) => module.lessons), [structure.modules]);
-  const [progress, setProgress] = useState(() => readLocalProgress(orderedLessons));
-  const [courseUnlocked, setCourseUnlocked] = useState(false);
-  const isCourseLocked = structure.course.status === "locked" && !courseUnlocked;
+  const allLessons = useMemo(() => structures.flatMap((item) => item.modules.flatMap((module) => module.lessons)), [structures]);
+  const [progress, setProgress] = useState(() => readLocalProgress(allLessons));
+  const courseUnlocked = isCourseUnlockedFromProgress(structure.course.id, structures, progress);
+  const isCourseLocked = !courseUnlocked;
   const lessonStates = getLessonProgressStates(orderedLessons, progress);
   const courseProgress = calculateCourseProgress(orderedLessons, progress);
 
   useEffect(() => {
-    setProgress(readLocalProgress(orderedLessons));
-    setCourseUnlocked(isCourseUnlocked(structure.course.id));
-  }, [orderedLessons, structure.course.id]);
+    const refreshProgress = () => setProgress(readLocalProgress(allLessons));
+    refreshProgress();
+    return subscribeToProgressChanges(refreshProgress);
+  }, [allLessons]);
 
   function handleOpenLesson(lesson: LessonDocument) {
     const lessonState = lessonStates.find((state) => state.lessonId === lesson.id);
@@ -38,7 +41,7 @@ export function CourseDetail({ structure }: { structure: CourseStructure }) {
       return;
     }
 
-    setProgress(setCurrentLesson(progress, lesson.id));
+    setProgress(setCurrentLesson(progress, lesson.id, structure.course.id, orderedLessons));
   }
 
   return (

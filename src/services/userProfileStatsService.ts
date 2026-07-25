@@ -43,14 +43,15 @@ export function calculateOverallProgressPercent(completedLessons: number, totalL
   return Math.max(0, Math.min(100, Math.round((completedLessons / totalLessons) * 100)));
 }
 
-export function readUserProfileStats(uid: string, totalLessons: number): UserProfileStats {
+export function readUserProfileStats(uid: string, totalLessons: number, validLessonIds?: string[]): UserProfileStats {
   if (typeof window === "undefined") {
     return createEmptyUserProfileStats(totalLessons);
   }
 
+  const validLessonIdSet = validLessonIds?.length ? new Set(validLessonIds) : undefined;
   const progress = readJson<Partial<StudentProgressDocument>>(LOCAL_KEYS.progress);
   const completedLessonIds = isOwnedByUser(progress, uid) && Array.isArray(progress.completedLessonIds)
-    ? Array.from(new Set(progress.completedLessonIds.filter(isString)))
+    ? Array.from(new Set(progress.completedLessonIds.filter(isString).filter((lessonId) => !validLessonIdSet || validLessonIdSet.has(lessonId))))
     : [];
   const hasStartedCourse = Boolean(completedLessonIds.length || (isOwnedByUser(progress, uid) && (progress.currentLessonId || progress.lastLessonId)));
   const checklistSessions = readOwnedArray<UserChecklistSessionDocument>(LOCAL_KEYS.checklistSessions, uid, isChecklistSession);

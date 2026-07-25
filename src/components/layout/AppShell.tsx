@@ -15,6 +15,7 @@ import { PwaProvider } from "@/components/pwa/PwaProvider";
 import { UserProfileModal } from "@/components/profile/UserProfileModal";
 import { UserAvatar } from "@/components/ui/SafeImage";
 import { logout } from "@/services/authService";
+import { subscribeToProgressChanges } from "@/services/progressService";
 import { createEmptyUserProfileStats, readUserProfileStats, type UserProfileStats } from "@/services/userProfileStatsService";
 
 export function AppShell({ children }: Readonly<{ children: ReactNode }>) {
@@ -122,7 +123,8 @@ function AppFrame({ children }: Readonly<{ children: ReactNode }>) {
 function UserMenu() {
   const { user, profile, profileError, isProfileLoading } = useAuth();
   const [isProfileOpen, setProfileOpen] = useState(false);
-  const totalPublishedLessons = useMemo(() => localLessonDocuments.filter((lesson) => lesson.publicationState === "published").length, []);
+  const publishedLessonIds = useMemo(() => localLessonDocuments.filter((lesson) => lesson.publicationState === "published").map((lesson) => lesson.id), []);
+  const totalPublishedLessons = publishedLessonIds.length;
   const [stats, setStats] = useState<UserProfileStats>(() => createEmptyUserProfileStats(totalPublishedLessons));
   const displayName = profile?.displayName ?? user?.displayName ?? "Aluno";
 
@@ -133,8 +135,10 @@ function UserMenu() {
       return;
     }
 
-    setStats(readUserProfileStats(user.uid, totalPublishedLessons));
-  }, [totalPublishedLessons, user]);
+    const refreshStats = () => setStats(readUserProfileStats(user.uid, totalPublishedLessons, publishedLessonIds));
+    refreshStats();
+    return subscribeToProgressChanges(refreshStats);
+  }, [publishedLessonIds, totalPublishedLessons, user]);
 
   if (!user) {
     return null;
@@ -145,7 +149,7 @@ function UserMenu() {
       <button
         type="button"
         onClick={() => {
-          setStats(readUserProfileStats(user.uid, totalPublishedLessons));
+          setStats(readUserProfileStats(user.uid, totalPublishedLessons, publishedLessonIds));
           setProfileOpen(true);
         }}
         className="focus-ring inline-flex items-center gap-3 rounded-md border border-white/[0.08] bg-white/[0.035] p-1.5 text-left transition hover:border-aviation-cyan/40 md:pl-3"

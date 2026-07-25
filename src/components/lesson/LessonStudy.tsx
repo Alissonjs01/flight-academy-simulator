@@ -4,30 +4,41 @@ import clsx from "clsx";
 import { Lock, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import type { LessonContext } from "@/features/content/types";
+import type { CourseStructure, LessonContext } from "@/features/content/types";
 import type { StudentProgressDocument } from "@/features/progress/types";
 import { getLessonStatusClass, lessonStatusLabels } from "@/features/content/statusLabels";
-import { completeLesson, getLessonStatus, isCourseUnlocked, readLocalProgress, setCurrentLesson } from "@/services/progressService";
+import { completeLesson, getLessonStatus, isCourseUnlockedFromProgress, readLocalProgress, setCurrentLesson, subscribeToProgressChanges } from "@/services/progressService";
 import { LoadingState } from "@/components/ui/StateMessage";
 import { Panel } from "@/components/ui/Panel";
 
-export function LessonStudy({ context }: { context: LessonContext }) {
+export function LessonStudy({ context, structures }: { context: LessonContext; structures: CourseStructure[] }) {
   const orderedLessons = useMemo(() => context.orderedLessons, [context.orderedLessons]);
+  const allLessons = useMemo(() => structures.flatMap((structure) => structure.modules.flatMap((module) => module.lessons)), [structures]);
   const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(orderedLessons));
+  const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(allLessons));
   const [courseUnlocked, setCourseUnlocked] = useState(false);
 
   useEffect(() => {
-    const localProgress = readLocalProgress(orderedLessons);
-    const lessonState = getLessonStatus(orderedLessons, localProgress, context.lesson.id);
-    const unlocked = isCourseUnlocked(context.course.id);
-    setCourseUnlocked(unlocked);
-    setProgress((context.course.status === "locked" && !unlocked) || !lessonState?.isUnlocked ? localProgress : setCurrentLesson(localProgress, context.lesson.id));
-    setIsLoading(false);
-  }, [context.course.id, context.course.status, context.lesson.id, orderedLessons]);
+    const refreshProgress = () => {
+      const localProgress = readLocalProgress(allLessons);
+      const lessonState = getLessonStatus(orderedLessons, localProgress, context.lesson.id);
+      const unlocked = isCourseUnlockedFromProgress(context.course.id, structures, localProgress);
+      const shouldMarkCurrent = unlocked;
+      const nextProgress = shouldMarkCurrent && lessonState?.isUnlocked && localProgress.currentLessonId !== context.lesson.id
+        ? setCurrentLesson(localProgress, context.lesson.id, context.course.id, orderedLessons)
+        : localProgress;
+
+      setCourseUnlocked(unlocked);
+      setProgress(nextProgress);
+      setIsLoading(false);
+    };
+
+    refreshProgress();
+    return subscribeToProgressChanges(refreshProgress);
+  }, [allLessons, context.course.id, context.course.status, context.lesson.id, orderedLessons, structures]);
 
   const lessonState = getLessonStatus(orderedLessons, progress, context.lesson.id);
-  const isLocked = (context.course.status === "locked" && !courseUnlocked) || !lessonState?.isUnlocked;
+  const isLocked = !courseUnlocked || !lessonState?.isUnlocked;
   const isCompleted = lessonState?.status === "concluida";
   const nextLessonState = context.nextLesson ? getLessonStatus(orderedLessons, progress, context.nextLesson.id) : undefined;
   const canContinue = Boolean(context.nextLesson && nextLessonState?.isUnlocked);
@@ -37,7 +48,7 @@ export function LessonStudy({ context }: { context: LessonContext }) {
       return;
     }
 
-    setProgress(completeLesson(orderedLessons, progress, context.lesson.id));
+    setProgress(completeLesson(orderedLessons, progress, context.lesson.id, context.course.id));
   }
 
   if (isLoading) {

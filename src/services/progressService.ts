@@ -1,4 +1,4 @@
-import type { LessonDocument, ModuleDocument } from "@/features/content/types";
+import type { CourseDocument, CourseStructure, LessonDocument, ModuleDocument } from "@/features/content/types";
 import type { LessonProgressState, ProgressSummary, StudentProgressDocument } from "@/features/progress/types";
 import { getFirebaseAuth, isFirebaseConfigured } from "@/lib/firebase/client";
 import { syncProgressToFirestore } from "@/services/firestorePrivateSyncService";
@@ -6,6 +6,7 @@ import { syncProgressToFirestore } from "@/services/firestorePrivateSyncService"
 const STORAGE_KEY = "flight-academy-simulator:student-progress:v1";
 const UNLOCKED_COURSES_KEY = "flight-academy-simulator:unlocked-courses:v1";
 const DEFAULT_STUDENT_ID = "local-student";
+const PROGRESS_UPDATED_EVENT = "flight-academy-simulator:progress-updated";
 
 function nowIso() {
   return new Date().toISOString();
@@ -46,14 +47,14 @@ export function readLocalProgress(lessons: LessonDocument[]): StudentProgressDoc
 
     const lessonIds = new Set(lessons.map((lesson) => lesson.id));
     const completedLessonIds = Array.isArray(parsed.completedLessonIds)
-      ? parsed.completedLessonIds.filter((lessonId) => lessonIds.has(lessonId))
+      ? Array.from(new Set(parsed.completedLessonIds.filter((lessonId): lessonId is string => typeof lessonId === "string" && lessonId.length > 0)))
       : [];
     const currentLessonId = parsed.currentLessonId && lessonIds.has(parsed.currentLessonId) ? parsed.currentLessonId : undefined;
-    const lastLessonId = parsed.lastLessonId && lessonIds.has(parsed.lastLessonId) ? parsed.lastLessonId : currentLessonId;
+    const lastLessonId = typeof parsed.lastLessonId === "string" && parsed.lastLessonId.length > 0 ? parsed.lastLessonId : currentLessonId;
 
     return {
-      id: parsed.id ?? `progress-${DEFAULT_STUDENT_ID}`,
-      studentId: parsed.studentId ?? DEFAULT_STUDENT_ID,
+      id: typeof parsed.id === "string" ? parsed.id : `progress-${currentStudentId}`,
+      studentId: typeof parsed.studentId === "string" ? parsed.studentId : currentStudentId,
       completedLessonIds,
       currentLessonId: currentLessonId ?? findNextAvailableLessonId(lessons, completedLessonIds),
       lastLessonId,
@@ -64,7 +65,7 @@ export function readLocalProgress(lessons: LessonDocument[]): StudentProgressDoc
   }
 }
 
-export function writeLocalProgress(progress: StudentProgressDocument) {
+export function writeLocalProgress(progress: StudentProgressDocument, courseId?: string, courseLessons?: LessonDocument[]) {
   if (typeof window === "undefined") {
     return;
   }
@@ -77,11 +78,13 @@ export function writeLocalProgress(progress: StudentProgressDocument) {
     updatedAt: nowIso()
   };
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(scopedProgress));
-  syncProgressToFirestore(scopedProgress);
+  syncProgressToFirestore(scopedProgress, courseId, courseLessons);
+  notifyProgressUpdated();
 }
 
-export function completeLesson(lessons: LessonDocument[], progress: StudentProgressDocument, lessonId: string): StudentProgressDocument {
-  const completedLessonIds = Array.from(new Set([...progress.completedLessonIds, lessonId]));
+export function completeLesson(lessons: LessonDocument[], progress: StudentProgressDocument, lessonId: string, courseId?: string): StudentProgressDocument {
+  const validLessonIds = new Set(lessons.filter((lesson) => lesson.publicationState === "published").map((lesson) => lesson.id));
+  const completedLessonIds = validLessonIds.has(lessonId) ? Array.from(new Set([...progress.completedLessonIds, lessonId])) : progress.completedLessonIds;
   const nextLessonId = findNextAvailableLessonId(lessons, completedLessonIds);
   const nextProgress = {
     ...progress,
@@ -91,11 +94,11 @@ export function completeLesson(lessons: LessonDocument[], progress: StudentProgr
     updatedAt: nowIso()
   };
 
-  writeLocalProgress(nextProgress);
+  writeLocalProgress(nextProgress, courseId, lessons);
   return nextProgress;
 }
 
-export function setCurrentLesson(progress: StudentProgressDocument, lessonId: string): StudentProgressDocument {
+export function setCurrentLesson(progress: StudentProgressDocument, lessonId: string, courseId?: string, courseLessons?: LessonDocument[]): StudentProgressDocument {
   const nextProgress = {
     ...progress,
     currentLessonId: lessonId,
@@ -103,14 +106,25 @@ export function setCurrentLesson(progress: StudentProgressDocument, lessonId: st
     updatedAt: nowIso()
   };
 
-  writeLocalProgress(nextProgress);
+  writeLocalProgress(nextProgress, courseId, courseLessons);
   return nextProgress;
 }
 
 export function getLessonProgressStates(lessons: LessonDocument[], progress: StudentProgressDocument): LessonProgressState[] {
-  return lessons.map((lesson, index) => {
+  const publishedLessons = lessons.filter((lesson) => lesson.publicationState === "published");
+
+  return lessons.map((lesson) => {
+    if (lesson.publicationState !== "published") {
+      return {
+        lessonId: lesson.id,
+        isUnlocked: false,
+        status: "bloqueada"
+      };
+    }
+
+    const index = publishedLessons.findIndex((item) => item.id === lesson.id);
     const isCompleted = progress.completedLessonIds.includes(lesson.id);
-    const previousLesson = lessons[index - 1];
+    const previousLesson = publishedLessons[index - 1];
     const isUnlocked = index === 0 || (previousLesson ? progress.completedLessonIds.includes(previousLesson.id) : false);
     const isCurrent = progress.currentLessonId === lesson.id || (!progress.currentLessonId && isUnlocked && !isCompleted);
 
@@ -149,6 +163,35 @@ export function calculateModuleProgress(module: ModuleDocument, lessons: LessonD
   return total > 0 ? clampPercent(Math.round((completed / total) * 100)) : 0;
 }
 
+export function isCourseComplete(structure: CourseStructure, progress: StudentProgressDocument) {
+  const lessons = getPublishedLessons(structure);
+  return lessons.length > 0 && lessons.every((lesson) => progress.completedLessonIds.includes(lesson.id));
+}
+
+export function getUnlockedCourseIdsFromProgress(structures: CourseStructure[], progress: StudentProgressDocument): string[] {
+  const orderedStructures = [...structures]
+    .filter((structure) => structure.course.publicationState === "published")
+    .sort((a, b) => a.course.order - b.course.order);
+  const completedCourseIds = new Set(orderedStructures.filter((structure) => isCourseComplete(structure, progress)).map((structure) => structure.course.id));
+  const completedCourseTitles = new Set(orderedStructures.filter((structure) => completedCourseIds.has(structure.course.id)).map((structure) => normalizeRequirement(structure.course.title)));
+  const unlocked = new Set<string>();
+
+  orderedStructures.forEach((structure, index) => {
+    const isFirstCourse = index === 0;
+    const prerequisitesMet = areCoursePrerequisitesMet(structure.course, completedCourseIds, completedCourseTitles);
+
+    if (isFirstCourse || prerequisitesMet || (structure.course.status !== "locked" && structure.course.prerequisites.length === 0)) {
+      unlocked.add(structure.course.id);
+    }
+  });
+
+  return Array.from(unlocked);
+}
+
+export function isCourseUnlockedFromProgress(courseId: string, structures: CourseStructure[], progress: StudentProgressDocument) {
+  return getUnlockedCourseIdsFromProgress(structures, progress).includes(courseId);
+}
+
 export function readUnlockedCourseIds(): string[] {
   if (typeof window === "undefined") {
     return [];
@@ -175,8 +218,28 @@ export function isCourseUnlocked(courseId: string) {
   return readUnlockedCourseIds().includes(courseId);
 }
 
+export function subscribeToProgressChanges(callback: () => void) {
+  if (typeof window === "undefined") {
+    return () => undefined;
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY || event.key === UNLOCKED_COURSES_KEY) {
+      callback();
+    }
+  };
+
+  window.addEventListener(PROGRESS_UPDATED_EVENT, callback);
+  window.addEventListener("storage", handleStorage);
+
+  return () => {
+    window.removeEventListener(PROGRESS_UPDATED_EVENT, callback);
+    window.removeEventListener("storage", handleStorage);
+  };
+}
+
 function findNextAvailableLessonId(lessons: LessonDocument[], completedLessonIds: string[]) {
-  return lessons.find((lesson) => !completedLessonIds.includes(lesson.id))?.id;
+  return lessons.find((lesson) => lesson.publicationState === "published" && !completedLessonIds.includes(lesson.id))?.id;
 }
 
 function clampPercent(value: number) {
@@ -198,4 +261,29 @@ function getStoredOwnerId(progress: Partial<StudentProgressDocument>) {
   }
 
   return typeof candidate.studentId === "string" ? candidate.studentId : undefined;
+}
+
+function notifyProgressUpdated() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(PROGRESS_UPDATED_EVENT));
+  }
+}
+
+function getPublishedLessons(structure: CourseStructure) {
+  return structure.modules.flatMap((module) => module.lessons).filter((lesson) => lesson.publicationState === "published");
+}
+
+function areCoursePrerequisitesMet(course: CourseDocument, completedCourseIds: Set<string>, completedCourseTitles: Set<string>) {
+  if (!course.prerequisites.length) {
+    return true;
+  }
+
+  return course.prerequisites.every((requirement) => {
+    const normalized = normalizeRequirement(requirement);
+    return completedCourseIds.has(requirement) || completedCourseTitles.has(normalized) || Array.from(completedCourseTitles).some((title) => normalized.includes(title));
+  });
+}
+
+function normalizeRequirement(value: string) {
+  return value.trim().toLocaleLowerCase("pt-BR");
 }

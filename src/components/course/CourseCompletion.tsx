@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { CourseStructure, LessonDocument } from "@/features/content/types";
 import type { StudentProgressDocument } from "@/features/progress/types";
-import { calculateCourseProgress, readLocalProgress } from "@/services/progressService";
+import { calculateCourseProgress, readLocalProgress, subscribeToProgressChanges } from "@/services/progressService";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
@@ -18,12 +18,14 @@ export function CourseCompletion({ structure }: CourseCompletionProps) {
   const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(orderedLessons));
 
   useEffect(() => {
-    setProgress(readLocalProgress(orderedLessons));
+    const refreshProgress = () => setProgress(readLocalProgress(orderedLessons));
+    refreshProgress();
+    return subscribeToProgressChanges(refreshProgress);
   }, [orderedLessons]);
 
   const summary = calculateCourseProgress(orderedLessons, progress);
   const isComplete = summary.totalLessons > 0 && summary.completedLessons === summary.totalLessons;
-  const firstPendingLesson = orderedLessons.find((lesson) => !progress.completedLessonIds.includes(lesson.id));
+  const firstPendingLesson = orderedLessons.find((lesson) => lesson.publicationState === "published" && !progress.completedLessonIds.includes(lesson.id));
 
   return (
     <div className="mx-auto max-w-5xl space-y-4">

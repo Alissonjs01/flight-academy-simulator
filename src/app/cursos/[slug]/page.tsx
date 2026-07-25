@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { CourseDetail } from "@/components/course/CourseDetail";
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import { getCourseStructure } from "@/services/courseService";
+import { listCourseStructures } from "@/services/courseService";
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const structure = await getCourseStructure(slug);
+  const structures = await listCourseStructures();
+  const structure = structures.find((item) => item.course.slug === slug);
 
   if (!structure) {
     notFound();
@@ -14,7 +15,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   return (
     <div className="mx-auto max-w-7xl">
       <SectionHeader eyebrow={structure.course.category} title={structure.course.title} description={structure.course.description} />
-      <CourseDetail structure={structure} />
+      <CourseDetail structure={structure} structures={structures} />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { CourseStructure } from "@/features/content/types";
 import type { StudentProgressDocument } from "@/features/progress/types";
-import { calculateCourseProgress, calculateModuleProgress, readLocalProgress } from "@/services/progressService";
+import { calculateCourseProgress, calculateModuleProgress, readLocalProgress, subscribeToProgressChanges } from "@/services/progressService";
 import { Panel } from "@/components/ui/Panel";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 
@@ -12,7 +12,9 @@ export function ProgressOverview({ structures }: { structures: CourseStructure[]
   const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(allLessons));
 
   useEffect(() => {
-    setProgress(readLocalProgress(allLessons));
+    const refreshProgress = () => setProgress(readLocalProgress(allLessons));
+    refreshProgress();
+    return subscribeToProgressChanges(refreshProgress);
   }, [allLessons]);
 
   return (

@@ -122,10 +122,41 @@ export async function hydratePrivateLocalCacheFromFirestore(uid: string) {
 
   const db = getFirebaseDb();
   const progressSnapshot = await getDocs(query(collection(db, "userCourseProgress"), where("userId", "==", uid)));
-  const firstProgress = progressSnapshot.docs[0]?.data() as StudentProgressDocument | undefined;
+  const lessonProgressSnapshot = await getDocs(query(collection(db, "userLessonProgress"), where("userId", "==", uid)));
+  const progressDocuments = progressSnapshot.docs.map((item) => item.data() as Partial<StudentProgressDocument>);
+  const completedLessonIds = new Set<string>();
 
-  if (firstProgress) {
-    window.localStorage.setItem(LOCAL_KEYS.progress, JSON.stringify(firstProgress));
+  progressDocuments.forEach((progress) => {
+    if (Array.isArray(progress.completedLessonIds)) {
+      progress.completedLessonIds.filter(isString).forEach((lessonId) => completedLessonIds.add(lessonId));
+    }
+  });
+
+  lessonProgressSnapshot.docs.forEach((item) => {
+    const data = item.data() as { lessonId?: unknown; status?: unknown };
+    if (data.status === "completed" && isString(data.lessonId)) {
+      completedLessonIds.add(data.lessonId);
+    }
+  });
+
+  const latestProgress = progressDocuments
+    .filter((progress) => isString(progress.updatedAt))
+    .sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)))[0];
+
+  if (completedLessonIds.size || latestProgress) {
+    const timestamp = new Date().toISOString();
+    window.localStorage.setItem(
+      LOCAL_KEYS.progress,
+      JSON.stringify({
+        id: `progress-${uid}`,
+        studentId: uid,
+        userId: uid,
+        completedLessonIds: Array.from(completedLessonIds),
+        currentLessonId: isString(latestProgress?.currentLessonId) ? latestProgress.currentLessonId : undefined,
+        lastLessonId: isString(latestProgress?.lastLessonId) ? latestProgress.lastLessonId : undefined,
+        updatedAt: isString(latestProgress?.updatedAt) ? latestProgress.updatedAt : timestamp
+      })
+    );
   }
 }
 

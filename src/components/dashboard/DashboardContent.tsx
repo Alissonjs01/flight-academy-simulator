@@ -15,25 +15,33 @@ import type { StudentProgressDocument } from "@/features/progress/types";
 import {
   calculateCourseProgress,
   calculateModuleProgress,
+  getUnlockedCourseIdsFromProgress,
   getLessonProgressStates,
-  readLocalProgress
+  readLocalProgress,
+  subscribeToProgressChanges
 } from "@/services/progressService";
 
 type DashboardContentProps = {
   studentName: string;
-  structure: CourseStructure;
+  structures: CourseStructure[];
   aircraft: Aircraft;
 };
 
-export function DashboardContent({ studentName, structure, aircraft }: DashboardContentProps) {
+export function DashboardContent({ studentName, structures, aircraft }: DashboardContentProps) {
   const { user, profile } = useAuth();
-  const orderedLessons = useMemo(() => structure.modules.flatMap((module) => module.lessons), [structure.modules]);
-  const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(orderedLessons));
+  const allLessons = useMemo(() => structures.flatMap((structure) => structure.modules.flatMap((module) => module.lessons)), [structures]);
+  const [progress, setProgress] = useState<StudentProgressDocument>(() => readLocalProgress(allLessons));
   const displayName = profile?.displayName ?? user?.displayName ?? studentName;
 
   useEffect(() => {
-    setProgress(readLocalProgress(orderedLessons));
-  }, [orderedLessons]);
+    const refreshProgress = () => setProgress(readLocalProgress(allLessons));
+    refreshProgress();
+    return subscribeToProgressChanges(refreshProgress);
+  }, [allLessons]);
+
+  const unlockedCourseIds = getUnlockedCourseIdsFromProgress(structures, progress);
+  const structure = selectCurrentStructure(structures, progress, unlockedCourseIds);
+  const orderedLessons = useMemo(() => structure.modules.flatMap((module) => module.lessons), [structure.modules]);
 
   const lessonStates = getLessonProgressStates(orderedLessons, progress);
   const courseProgress = calculateCourseProgress(orderedLessons, progress);
@@ -164,6 +172,19 @@ export function DashboardContent({ studentName, structure, aircraft }: Dashboard
 
 function getCurrentLesson(lessons: LessonDocument[], lessonId?: string) {
   return lessons.find((lesson) => lesson.id === lessonId);
+}
+
+function selectCurrentStructure(structures: CourseStructure[], progress: StudentProgressDocument, unlockedCourseIds: string[]) {
+  const orderedStructures = [...structures].sort((a, b) => a.course.order - b.course.order);
+  return (
+    orderedStructures.find((structure) => {
+      const lessons = structure.modules.flatMap((module) => module.lessons);
+      const summary = calculateCourseProgress(lessons, progress);
+      return unlockedCourseIds.includes(structure.course.id) && summary.totalLessons > 0 && summary.coursePercent < 100;
+    }) ??
+    orderedStructures.find((structure) => unlockedCourseIds.includes(structure.course.id)) ??
+    orderedStructures[0]
+  );
 }
 
 function InfoBox({ label, value }: { label: string; value: string }) {
