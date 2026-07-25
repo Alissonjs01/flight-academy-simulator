@@ -83,14 +83,20 @@ export function calculateChecklistProgress(checklist: ChecklistDocument, complet
     return 0;
   }
 
-  return Math.round((completedItemIds.length / checklist.items.length) * 100);
+  const validItemIds = new Set(checklist.items.map((item) => item.id));
+  const completedValidItemIds = new Set(completedItemIds.filter((itemId) => validItemIds.has(itemId)));
+
+  return Math.min(100, Math.round((completedValidItemIds.size / checklist.items.length) * 100));
 }
 
 function writeChecklistSession(checklist: ChecklistDocument, session: UserChecklistSessionDocument) {
   const sessions = readSessions();
+  const validItemIds = new Set(checklist.items.map((item) => item.id));
+  const completedItemIds = Array.from(new Set(session.completedItemIds.filter((itemId) => validItemIds.has(itemId))));
   const nextSession = {
     ...session,
-    progressPercent: calculateChecklistProgress(checklist, session.completedItemIds)
+    completedItemIds,
+    progressPercent: calculateChecklistProgress(checklist, completedItemIds)
   };
   writeSessions([...sessions.filter((item) => item.checklistId !== checklist.id), nextSession]);
   syncChecklistSessionToFirestore(nextSession);

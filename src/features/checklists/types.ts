@@ -2,6 +2,20 @@ import type { PublicationState } from "@/features/content/types";
 import type { TechnicalMetadata } from "@/features/technical/types";
 
 export type FlightPhase =
+  | "preparacao-do-voo"
+  | "inspecao-externa"
+  | "cockpit-inicial"
+  | "energizacao"
+  | "antes-da-partida"
+  | "partida-motor-1"
+  | "partida-motor-2"
+  | "apos-partida"
+  | "alinhamento"
+  | "apos-decolagem"
+  | "preparacao-descida"
+  | "antes-pouso"
+  | "estacionamento"
+  | "desligamento"
   | "preparacao"
   | "cockpit"
   | "partida"

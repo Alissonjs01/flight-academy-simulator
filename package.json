@@ -16,7 +16,7 @@
     "seed:emulator": "firebase emulators:exec --only firestore \"tsx scripts/seedFirestore.ts\"",
     "admin:set": "tsx scripts/setAdminClaim.ts",
     "deploy:firestore": "firebase deploy --only firestore:rules,firestore:indexes",
-    "test": "vitest run tests/admin-validation.test.ts tests/content-fidelity.test.ts tests/local-migration.test.ts tests/pwa.test.ts tests/no-storage-mode.test.ts tests/progress-profile-state.test.ts",
+    "test": "vitest run tests/admin-validation.test.ts tests/content-fidelity.test.ts tests/local-migration.test.ts tests/pwa.test.ts tests/no-storage-mode.test.ts tests/progress-profile-state.test.ts tests/checklists-aircraft-organization.test.ts",
     "test:pwa": "vitest run tests/pwa.test.ts",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run tests/firebase-rules.test.ts\"",
     "test:firebase": "firebase emulators:exec --only auth,firestore \"vitest run tests/firebase-auth-emulator.test.ts tests/firebase-rules.test.ts\"",

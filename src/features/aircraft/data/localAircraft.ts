@@ -10,6 +10,7 @@ import type {
   AircraftSystemDocument,
   AircraftTrainingDocument
 } from "@/features/aircraft/types";
+import { c408ChecklistIds } from "@/features/checklists/data/localChecklists";
 import { provisionalTechnicalMetadata, simulatorAdaptationMetadata, trainingExerciseMetadata } from "@/features/technical/defaults";
 
 const createdAt = "2026-07-23T00:00:00.000Z";
@@ -140,7 +141,7 @@ export const localAircraftDocuments: AircraftDocument[] = [
       "performance-c408-weight-balance-study",
       "performance-c408-runway-planning"
     ],
-    checklistIds: ["checklist-c408-preflight", "checklist-c408-approach"],
+    checklistIds: c408ChecklistIds,
     trainingIds: [
       "training-c408-exterior-cockpit-recognition",
       "training-c408-power-start",
