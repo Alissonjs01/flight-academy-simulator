@@ -1,14 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
 import { localAircraftDocuments } from "@/features/aircraft/data/localAircraft";
 import { c408ChecklistAircraftId, localChecklistDocuments } from "@/features/checklists/data/localChecklists";
 import { getFlightPhaseLabel, operationalFlightPhaseOrder } from "@/features/checklists/statusLabels";
-import { readChecklistSession, resetChecklistSession, toggleChecklistItem } from "@/services/checklistSessionService";
 
 describe("organização dos checklists por aeronave", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
-  });
-
   it("exibe somente o C408 como aeronave atual com checklists publicados", () => {
     const visibleAircraft = localAircraftDocuments.filter(
       (aircraft) =>
@@ -58,48 +54,17 @@ describe("organização dos checklists por aeronave", () => {
     ]);
   });
 
-  it("marca e reinicia a sessão sem escrever no progresso pedagógico", () => {
-    const storage = createStorage();
-    vi.stubGlobal("window", { localStorage: storage });
+  it("mantém a página da aeronave como consulta rápida sem estado de checklist", () => {
+    const source = readFileSync("src/components/checklists/ChecklistCenter.tsx", "utf8");
 
-    const checklist = localChecklistDocuments[0];
-    const firstItemId = checklist.items[0].id;
-
-    expect(readChecklistSession(checklist).progressPercent).toBe(0);
-
-    const markedSession = toggleChecklistItem(checklist, firstItemId);
-    expect(markedSession.completedItemIds).toEqual([firstItemId]);
-    expect(markedSession.progressPercent).toBe(20);
-
-    const resetSession = resetChecklistSession(checklist);
-    expect(resetSession.completedItemIds).toEqual([]);
-    expect(resetSession.progressPercent).toBe(0);
-
-    expect(storage.getItem("flight-academy-simulator:student-progress:v1")).toBeNull();
+    expect(source).not.toContain("useState");
+    expect(source).not.toContain("readChecklistSession");
+    expect(source).not.toContain("toggleChecklistItem");
+    expect(source).not.toContain("resetChecklistSession");
+    expect(source).not.toContain("type=\"checkbox\"");
+    expect(source).not.toContain("Progresso da fase");
+    expect(source).toContain("OVERHEAD");
+    expect(source).toContain("FRONTAL");
+    expect(source).toContain("PEDESTAL");
   });
 });
-
-function createStorage(): Storage {
-  const store = new Map<string, string>();
-
-  return {
-    get length() {
-      return store.size;
-    },
-    clear() {
-      store.clear();
-    },
-    getItem(key: string) {
-      return store.get(key) ?? null;
-    },
-    key(index: number) {
-      return Array.from(store.keys())[index] ?? null;
-    },
-    removeItem(key: string) {
-      store.delete(key);
-    },
-    setItem(key: string, value: string) {
-      store.set(key, value);
-    }
-  };
-}
