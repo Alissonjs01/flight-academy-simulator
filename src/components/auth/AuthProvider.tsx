@@ -1,12 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { User } from "firebase/auth";
 import type { StudentProfileDocument, UserRole } from "@/features/auth/types";
 import { isFirebaseConfigured } from "@/lib/firebase/client";
 import { getFirebaseAuthErrorMessage, getFirebaseDataErrorMessage } from "@/lib/firebase/errors";
 import { observeAuthState } from "@/services/authService";
-import { ensureStudentProfile, updateStudentProfile } from "@/services/userProfileService";
+import { ensureStudentProfile, getStudentProfile, updateStudentProfile } from "@/services/userProfileService";
 import {
   clearPrivateLocalData,
   detectLocalMigrationSummary,
@@ -26,6 +26,7 @@ type AuthContextValue = {
   authError?: string;
   profileError?: string;
   error?: string;
+  refreshProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue>({
@@ -33,7 +34,8 @@ const AuthContext = createContext<AuthContextValue>({
   role: null,
   isLoading: true,
   isProfileLoading: false,
-  isConfigured: false
+  isConfigured: false,
+  refreshProfile: async () => undefined
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -125,9 +127,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, [isConfigured]);
 
+  const refreshProfile = useCallback(async () => {
+    if (!user) {
+      return;
+    }
+
+    setIsProfileLoading(true);
+    setProfileError(undefined);
+
+    try {
+      const remoteProfile = await getStudentProfile(user.uid);
+      const nextProfile = remoteProfile ?? createFallbackStudentProfile(user);
+      const token = await user.getIdTokenResult();
+      const claimRole = token.claims.role;
+      const resolvedRole = claimRole === "admin" || claimRole === "instructor" || claimRole === "student" ? claimRole : nextProfile.role;
+
+      setProfile({ ...nextProfile, role: resolvedRole });
+      setRole(resolvedRole);
+    } catch (profileLoadError) {
+      setProfileError(buildProfileFallbackMessage(profileLoadError));
+    } finally {
+      setIsProfileLoading(false);
+    }
+  }, [user]);
+
   const value = useMemo<AuthContextValue>(
-    () => ({ user, profile, role, isLoading, isProfileLoading, isConfigured, authError, profileError, error: authError }),
-    [authError, isConfigured, isLoading, isProfileLoading, profile, profileError, role, user]
+    () => ({ user, profile, role, isLoading, isProfileLoading, isConfigured, authError, profileError, error: authError, refreshProfile }),
+    [authError, isConfigured, isLoading, isProfileLoading, profile, profileError, refreshProfile, role, user]
   );
 
   return (

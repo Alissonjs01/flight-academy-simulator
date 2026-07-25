@@ -176,7 +176,8 @@ service cloud.firestore {
         request.resource.data.displayName.size() <= 80 &&
         request.resource.data.keys().hasOnly([
           "uid", "displayName", "email", "photoURL", "role", "createdAt", "updatedAt", "lastLoginAt",
-          "migrationCompleted", "onboardingCompleted", "createdAtServer", "updatedAtServer", "lastLoginAtServer"
+          "migrationCompleted", "onboardingCompleted", "primarySimulator", "favoriteAircraftId", "experienceLevel",
+          "studyGoal", "preferredUnit", "platformLanguage", "createdAtServer", "updatedAtServer", "lastLoginAtServer"
         ]);
     }
 
@@ -188,7 +189,8 @@ service cloud.firestore {
         request.resource.data.role == resource.data.role &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           "displayName", "email", "photoURL", "updatedAt", "lastLoginAt", "migrationCompleted",
-          "onboardingCompleted", "updatedAtServer", "lastLoginAtServer"
+          "onboardingCompleted", "primarySimulator", "favoriteAircraftId", "experienceLevel", "studyGoal",
+          "preferredUnit", "platformLanguage", "updatedAtServer", "lastLoginAtServer"
         ]);
     }
 
@@ -200,7 +202,8 @@ service cloud.firestore {
         request.resource.data.createdAt == resource.data.createdAt &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           "displayName", "email", "photoURL", "role", "updatedAt", "lastLoginAt", "migrationCompleted",
-          "onboardingCompleted", "updatedAtServer", "lastLoginAtServer"
+          "onboardingCompleted", "primarySimulator", "favoriteAircraftId", "experienceLevel", "studyGoal",
+          "preferredUnit", "platformLanguage", "updatedAtServer", "lastLoginAtServer"
         ]);
     }
 

@@ -13,7 +13,8 @@ import {
   Settings2,
   ShieldCheck,
   SlidersHorizontal,
-  Target
+  Target,
+  UserCircle
 } from "lucide-react";
 import type { Aircraft, Avionic, Category, Checklist, Course, RouteItem, TrainingMission } from "@/types/academy";
 
@@ -25,6 +26,7 @@ export const navigationItems: RouteItem[] = [
   { label: "Checklists", href: "/checklists", icon: ClipboardList },
   { label: "Treinamentos", href: "/treinamentos", icon: Target },
   { label: "Progresso", href: "/progresso", icon: GaugeCircle },
+  { label: "Perfil", href: "/perfil", icon: UserCircle },
   { label: "Revisão", href: "/revisao", icon: BadgeCheck },
   { label: "Admin", href: "/admin", icon: SlidersHorizontal },
   { label: "Configurações", href: "/configuracoes", icon: Settings2 }

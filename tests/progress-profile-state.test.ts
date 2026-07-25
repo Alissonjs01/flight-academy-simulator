@@ -133,7 +133,7 @@ describe("progresso inicial e estatísticas do perfil", () => {
   });
 });
 
-describe("estado de autenticação e modal de perfil", () => {
+describe("estado de autenticação e página de perfil", () => {
   it("separa erro de autenticação de erro de perfil/Firestore", () => {
     const provider = readFileSync(resolve("src/components/auth/AuthProvider.tsx"), "utf8");
     const gate = readFileSync(resolve("src/components/auth/AuthGate.tsx"), "utf8");
@@ -146,18 +146,18 @@ describe("estado de autenticação e modal de perfil", () => {
     expect(gate).not.toContain("{profileError ?");
   });
 
-  it("abre o popup pelo menu do usuário e apresenta estados vazios neutros", () => {
+  it("leva o avatar para a rota de perfil e remove o popup antigo do fluxo principal", () => {
     const shell = readFileSync(resolve("src/components/layout/AppShell.tsx"), "utf8");
-    const modal = readFileSync(resolve("src/components/profile/UserProfileModal.tsx"), "utf8");
+    const profilePage = readFileSync(resolve("src/components/profile/ProfilePage.tsx"), "utf8");
+    const profileRoute = readFileSync(resolve("src/app/perfil/page.tsx"), "utf8");
 
-    expect(shell).toContain("setProfileOpen(true)");
-    expect(shell).toContain("UserProfileModal");
-    expect(modal).toContain("onMouseDown={onClose}");
-    expect(modal).toContain("event.key === \"Escape\"");
-    expect(modal).toContain("document.body.style.overflow = \"hidden\"");
-    expect(modal).toContain("Ainda não informado");
-    expect(modal).toContain("Nenhum curso iniciado");
-    expect(modal).toContain("Fechar perfil");
+    expect(shell).toContain("href=\"/perfil\"");
+    expect(shell).not.toContain("UserProfileModal");
+    expect(shell).not.toContain("setProfileOpen");
+    expect(profileRoute).toContain("ProfilePage");
+    expect(profilePage).toContain("Visão geral");
+    expect(profilePage).toContain("Preferências");
+    expect(profilePage).toContain("Conta");
   });
 });
 

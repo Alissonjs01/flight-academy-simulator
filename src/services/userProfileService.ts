@@ -79,11 +79,31 @@ function normalizeExistingProfile(profile: Partial<StudentProfileDocument>, user
   };
 }
 
-export async function updateStudentProfile(uid: string, updates: Partial<Pick<StudentProfileDocument, "displayName" | "photoURL" | "onboardingCompleted" | "migrationCompleted">>) {
+export type StudentProfileUpdate = Partial<
+  Pick<
+    StudentProfileDocument,
+    | "displayName"
+    | "photoURL"
+    | "onboardingCompleted"
+    | "migrationCompleted"
+    | "primarySimulator"
+    | "favoriteAircraftId"
+    | "experienceLevel"
+    | "studyGoal"
+    | "preferredUnit"
+    | "platformLanguage"
+  >
+>;
+
+export async function updateStudentProfile(uid: string, updates: StudentProfileUpdate) {
   const timestamp = nowIso();
   await updateDoc(doc(getFirebaseDb(), "users", uid), {
-    ...updates,
+    ...withoutUndefinedValues(updates),
     updatedAt: timestamp,
     updatedAtServer: serverTimestamp()
   });
+}
+
+function withoutUndefinedValues<T extends Record<string, unknown>>(value: T) {
+  return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined));
 }

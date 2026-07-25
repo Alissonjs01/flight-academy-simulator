@@ -248,7 +248,17 @@ describe("Firestore Security Rules", () => {
       await setDoc(doc(context.firestore(), "users", "student-a"), userProfile("student-a", "student"));
     });
     const db = testEnv.authenticatedContext("student-a", { role: "student" }).firestore();
-    await assertSucceeds(updateDoc(doc(db, "users", "student-a"), { displayName: "Aluno Atualizado", onboardingCompleted: true, updatedAt: "2026-07-23T00:00:00.000Z" }));
+    await assertSucceeds(updateDoc(doc(db, "users", "student-a"), {
+      displayName: "Aluno Atualizado",
+      onboardingCompleted: true,
+      primarySimulator: "Microsoft Flight Simulator 2024",
+      favoriteAircraftId: "aircraft-cessna-408-skycourier",
+      experienceLevel: "Iniciante",
+      studyGoal: "Estudar navegação IFR no simulador.",
+      preferredUnit: "mixed",
+      platformLanguage: "pt-BR",
+      updatedAt: "2026-07-23T00:00:00.000Z"
+    }));
   });
 
   it("bloqueia aluno alterando UID do perfil", async () => {
